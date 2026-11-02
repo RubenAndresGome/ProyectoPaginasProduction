@@ -2,7 +2,7 @@
 
 Guía operativa para agentes de IA (Claude, Copilot, Codex, Gemini…).
 **Ubicación canónica en Windows:**
-`D:\DocumentosWin\PROGRAMACION\Nueva carpeta\pythonProyects\DJANGO\ProyectoPaginas`
+`D:\DocumentosWin\PROGRAMACION\Nueva carpeta\pythonProyects\DJANGO\ProyectoPaginas\ProyectoPaginasProduction`
 
 > La ruta contiene **espacios** (`Nueva carpeta`). Entrecomilla SIEMPRE las rutas
 > en PowerShell, CMD y scripts. Arquitectura funcional detallada: `ARQUITECTURA.md`.
@@ -31,9 +31,9 @@ Guía operativa para agentes de IA (Claude, Copilot, Codex, Gemini…).
 ## 2. Arranque en Windows
 
 ```powershell
-cd "D:\DocumentosWin\PROGRAMACION\Nueva carpeta\pythonProyects\DJANGO\ProyectoPaginas"
+cd "D:\DocumentosWin\PROGRAMACION\Nueva carpeta\pythonProyects\DJANGO\ProyectoPaginas\ProyectoPaginasProduction"
 powershell -ExecutionPolicy Bypass -File .\setup_windows.ps1   # una vez (idempotente)
-.\run_windows.bat                                               # día a día
+.\run_windows.bat   # día a día: SQLite + admin de prueba (admin/1234) + Tailwind watch
 ```
 Comandos sueltos (sin activar venv):
 ```powershell
@@ -68,6 +68,14 @@ Activar venv: `.\.venv\Scripts\Activate.ps1` (PowerShell) / `.venv\Scripts\activ
 - Estáticos: entrada Tailwind `static/src/styles.css` → salida `static/css/dist/styles.css`
   (la que cargan las plantillas). Config: `tailwind.config.js` (v3, `darkMode: 'class'`).
 - Editor enriquecido: `django-ckeditor`. Debug toolbar activa solo con `DEBUG=True`.
+
+### Motor de artículos por bloques (`blog`)
+- `Plantilla.estructura` (JSON) = lista de `{"tipo", "datos"}`; al crear un `Articulo_Page` con plantilla,
+  `aplicar_plantilla()` inserta cada elemento como un `Bloque` (FK `articulo`, `orden`, `datos` JSON, `imagen`).
+- Tipos y campos de `datos`: `Bloque.ESQUEMA`. Cada tipo se pinta con `blog/templates/articulos/bloques/_<tipo>.html`
+  (autoescape activo: nunca usar `|safe` sobre `datos`).
+- Plantillas base en `blog/plantillas_base/` (sembradas por la migración 0007). Demo: `manage.py blog_demo`.
+- `content` (CKEditor) queda como contenido clásico opcional para artículos antiguos.
 
 ## 5. Configuración (`.env` en la RAÍZ)
 

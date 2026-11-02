@@ -1,0 +1,8 @@
+{% if bloque.imagen %}
+<figure class="my-8">
+    <img src="{{ bloque.imagen.url }}" alt="{{ bloque.datos.alt|default:bloque.datos.pie }}" loading="lazy" class="w-full rounded-xl shadow-md border border-slate-200 dark:border-slate-800">
+    {% if bloque.datos.pie %}<figcaption class="text-center text-sm text-slate-500 dark:text-slate-400 mt-2">{{ bloque.datos.pie }}</figcaption>{% endif %}
+</figure>
+{% elif user.is_staff %}
+<div class="my-6 p-6 border-2 border-dashed border-slate-400 rounded-xl text-center text-slate-500">🖼️ Bloque de imagen vacío — {{ bloque.datos.pie|default:"sube una imagen desde el admin" }}</div>
+{% endif %}

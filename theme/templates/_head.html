@@ -1,0 +1,23 @@
+{% load static %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="{% block meta_description %}{{ sitio.lema|default:'Plataforma de matemáticas remediales con entrenador adaptativo y blog.' }}{% endblock %}">
+<title>{% block title %}Inicio{% endblock %} · {{ sitio.nombre|default:"MathMaster" }}</title>
+{# Tema antes de pintar: evita el parpadeo claro/oscuro #}
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem('theme');
+      if (t === 'dark' || (t === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      }
+    } catch (e) {}
+  })();
+</script>
+<link rel="icon" href="{% static 'images/logoDJANGO.png' %}">
+<link rel="stylesheet" href="{% static 'css/dist/styles.css' %}">
+<link rel="stylesheet" href="{% static 'css/estilosPersonalizados.css' %}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js" defer></script>

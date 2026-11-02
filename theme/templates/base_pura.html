@@ -1,18 +1,15 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="es" class="dark">
+{% load static %}<!DOCTYPE html>
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Mi Sitio{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}">
-    <link rel="stylesheet" href="{% static 'css/estilosPersonalizados.css' %}">
+    {% include '_head.html' %}
+    {% block extrahead %}{% endblock %}
 </head>
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 transition-colors duration-300 min-h-screen">
-
-    <main class="container mx-auto px-4 py-8">
+<body class="font-[Inter] bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 min-h-screen">
+    <main id="contenido" class="{% block main_class %}container mx-auto px-4 py-8{% endblock %}">
         {% block content %}{% endblock %}
     </main>
-
+    {% include '_mensajes.html' %}
+    {% block extrajs %}{% endblock %}
+    <script src="{% static 'js/easter_egg.js' %}" defer></script>
 </body>
 </html>

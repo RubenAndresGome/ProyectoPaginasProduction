@@ -6,7 +6,7 @@ Las reglas comunes están en `AGENTS.md` (importado arriba). Esto añade solo lo
 
 ## Entorno
 - SO de trabajo: **Windows**. Proyecto en
-  `D:\DocumentosWin\PROGRAMACION\Nueva carpeta\pythonProyects\DJANGO\ProyectoPaginas`
+  `D:\DocumentosWin\PROGRAMACION\Nueva carpeta\pythonProyects\DJANGO\ProyectoPaginas\ProyectoPaginasProduction`
   (ruta con espacios → entrecomillar siempre).
 - Shell preferida: PowerShell. No asumir bash/WSL; no proponer `source`, `chmod`, `./binario`.
 - Intérprete: `.\.venv\Scripts\python.exe` (no `python` global).

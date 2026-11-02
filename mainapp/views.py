@@ -1,6 +1,8 @@
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
+from django.views.decorators.http import require_POST
 from mainapp.models import Article
 from mainapp.forms import ArticleForm
 
@@ -12,7 +14,7 @@ def hola_mundo(request):
 
 def pagina_pruebas(request, redirigir=0):
     if redirigir == 1:
-        return redirect('contacto', nombre='Ruben', apellidos='Andres')
+        return redirect('mainapp:contacto', nombre='Ruben', apellidos='Andres')
 
     return render(request, "paginas_principales/pagina_pruebas.html", {
         'texto_test':"Hola como estas",
@@ -45,6 +47,7 @@ def articulo_get(request, id):
     article = get_object_or_404(Article, id=id)
     return render(request, "actions_articules/articulo_detalle.html", {'article': article})
 
+@staff_member_required
 def articulo_editar(request, id):
     article = get_object_or_404(Article, id=id)
     if request.method == 'POST':
@@ -52,29 +55,32 @@ def articulo_editar(request, id):
         if form.is_valid():
             form.save()
             messages.success(request, f"✅ Artículo '{article.title}' editado correctamente")
-            return redirect('articulo_get', id=article.id)
+            return redirect('mainapp:articulo_get', id=article.id)
     else:
         form = ArticleForm(instance=article)
     return render(request,
                   'actions_articules/crear_and_editar_articulo_form.html',
                   {'form': form, 'editando': True})
 
+@staff_member_required
 def create_full_article(request):
     if request.method == 'POST':
         form = ArticleForm(request.POST, request.FILES)  # incluye FILES para la imagen
         if form.is_valid():
             article = form.save()
             messages.success(request, f"✅ Artículo '{article.title}' creado correctamente")
-            return redirect('articulos_get')
+            return redirect('mainapp:articulos_get')
     else:
         form = ArticleForm()
         
     return render(request, 'actions_articules/crear_and_editar_articulo_form.html',
                   {'form': form, 'editando': False})
 
+@staff_member_required
+@require_POST
 def borrar_articulo(request, id):
     article = get_object_or_404(Article, id=id)
     titulo = article.title
     article.delete()
     messages.success(request, f"✅ Artículo '{titulo}' eliminado correctamente")
-    return redirect('articulos_get')
+    return redirect('mainapp:articulos_get')

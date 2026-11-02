@@ -31,6 +31,8 @@ SECRET_KEY = env.str('SECRET_KEY', default='django-insecure-default-key-change-i
 DEBUG = env.bool('DEBUG', default=True)
 
 # Read ALLOWED_HOSTS from environment (comma-separated string)
+# Permite silenciar checks puntuales desde el entorno (p. ej. CI sin Pillow)
+SILENCED_SYSTEM_CHECKS = env.list('SILENCED_SYSTEM_CHECKS', default=[])
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
 
@@ -93,7 +95,7 @@ WSGI_APPLICATION = 'ProyectoPaginas.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-_DB_ENGINE = env.str('DB_ENGINE', default='django.db.backends.mysql')
+_DB_ENGINE = env.str('DB_ENGINE', default='django.db.backends.sqlite3')
 
 if _DB_ENGINE.endswith('sqlite3'):
     # SQLite: ruta anclada a BASE_DIR (independiente del cwd y del SO)

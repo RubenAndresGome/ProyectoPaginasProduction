@@ -1,0 +1,5 @@
+{% if bloque.youtube_id %}
+<div class="my-8 aspect-video rounded-xl overflow-hidden shadow-md">
+    <iframe class="w-full h-full" src="https://www.youtube-nocookie.com/embed/{{ bloque.youtube_id }}" title="Video" loading="lazy" allowfullscreen></iframe>
+</div>
+{% endif %}

@@ -11,17 +11,16 @@
 
             <!-- Menú Escritorio -->
             <ul class="hidden md:flex items-center space-x-6">
-                <li><a href="{% url 'inicio' %}" class="text-slate-300 hover:text-cyan-400 transition-colors font-medium">Inicio</a></li>
-                <li><a href="{% url 'hola_mundo' %}" class="text-slate-300 hover:text-cyan-400 transition-colors font-medium">Hola Mundo</a></li>
-                <li><a href="{% url 'Test' %}" class="text-slate-300 hover:text-cyan-400 transition-colors font-medium">Test</a></li>
-                <li><a href="{% url 'articulos_get' %}" class="text-slate-300 hover:text-cyan-400 transition-colors font-medium">Artículos</a></li>
-                <li><a href="{% url 'contacto' %}" class="text-slate-300 hover:text-cyan-400 transition-colors font-medium">Contacto</a></li>
+                <li><a href="{% url 'mainapp:inicio' %}" class="text-slate-300 hover:text-cyan-400 transition-colors font-medium">Inicio</a></li>
+                <li><a href="{% url 'mainapp:Test' %}" class="text-slate-300 hover:text-cyan-400 transition-colors font-medium">Test</a></li>
+                <li><a href="{% url 'mainapp:articulos_get' %}" class="text-slate-300 hover:text-cyan-400 transition-colors font-medium">Artículos</a></li>
+                <li><a href="{% url 'mainapp:contacto' %}" class="text-slate-300 hover:text-cyan-400 transition-colors font-medium">Contacto</a></li>
                 <li><a href="{% url 'blog:blog_publicaciones' %}" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-bold rounded-lg transition-all">Blog</a></li>
             </ul>
 
             <div class="flex items-center space-x-4">
                 <!-- Mini Buscador Rápido Unificado -->
-                <form action="{% url 'articulos_unificados' %}" method="GET" class="hidden lg:flex items-center">
+                <form action="{% url 'blog:blog_publicaciones' %}" method="GET" class="hidden lg:flex items-center">
                     <div class="relative">
                         <input type="text" name="q" placeholder="Buscar general..." 
                             class="w-48 pl-4 pr-10 py-1.5 text-sm bg-slate-800 border border-slate-600 rounded-full text-slate-200 focus:outline-none focus:border-cyan-500 transition-colors">

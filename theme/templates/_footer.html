@@ -1,0 +1,34 @@
+{% load static %}
+<footer class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 mt-12">
+  <div class="container mx-auto px-4 py-8 grid gap-8 md:grid-cols-3 text-sm">
+    <div>
+      <a href="{% url 'mainapp:inicio' %}" class="flex items-center gap-2 font-extrabold text-slate-900 dark:text-white text-lg">
+        <img src="{% static 'images/logoDJANGO.png' %}" alt="" class="w-7 h-7 object-contain"> {{ sitio.nombre|default:"MathMaster" }}
+      </a>
+      <p class="mt-2 text-slate-500 dark:text-slate-400">{{ sitio.lema|default:"Matemáticas remediales con práctica adaptativa." }}</p>
+    </div>
+    <nav aria-label="Pie de página" class="flex flex-col gap-1">
+      <span class="font-semibold text-slate-900 dark:text-white mb-1">Explora</span>
+      <a href="{% url 'entrenador:inicio' %}" class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400">Practicar</a>
+      <a href="{% url 'blog:blog_publicaciones' %}" class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400">Blog</a>
+      <a href="{% url 'mainapp:contacto' %}" class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400">Contacto</a>
+    </nav>
+    <div>
+      <span class="font-semibold text-slate-900 dark:text-white">Sígueme</span>
+      <div class="flex gap-2 mt-2">
+        {% for red in redes_sociales %}
+        <a href="{{ red.url }}" target="_blank" rel="noopener" aria-label="{{ red.nombre }}" title="{{ red.nombre }}"
+           class="w-9 h-9 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 border border-slate-200 dark:border-slate-700 transition-colors">
+          <i class="{{ red.icono }}"></i>
+        </a>
+        {% empty %}
+        <a href="https://github.com/RubenAndresGome" target="_blank" rel="noopener" aria-label="GitHub" class="w-9 h-9 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-indigo-600 border border-slate-200 dark:border-slate-700"><i class="fab fa-github"></i></a>
+        <a href="https://wa.me/524661074921" target="_blank" rel="noopener" aria-label="WhatsApp" class="w-9 h-9 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-indigo-600 border border-slate-200 dark:border-slate-700"><i class="fab fa-whatsapp"></i></a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="border-t border-slate-200 dark:border-slate-800 py-4 text-center text-xs text-slate-400">
+    © {% now "Y" %} {{ sitio.autor|default:"Rubén Andrés Gómez Molina" }} · Residencia Profesional ITESS
+  </div>
+</footer>

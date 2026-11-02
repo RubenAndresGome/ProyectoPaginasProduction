@@ -1,0 +1,3 @@
+<div class="my-6 p-4 rounded-xl border-l-4 {% if bloque.datos.variante == 'alerta' %}border-amber-500 bg-amber-50 dark:bg-amber-950/30{% elif bloque.datos.variante == 'exito' %}border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30{% else %}border-blue-500 bg-blue-50 dark:bg-blue-950/30{% endif %} text-slate-700 dark:text-slate-200">
+    {% if bloque.datos.variante == 'alerta' %}⚠️{% elif bloque.datos.variante == 'exito' %}✅{% else %}💡{% endif %} {{ bloque.datos.texto|linebreaksbr }}
+</div>

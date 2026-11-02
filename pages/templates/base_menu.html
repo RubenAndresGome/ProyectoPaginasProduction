@@ -11,11 +11,10 @@
 
             <!-- Menú Escritorio -->
             <ul class="hidden md:flex items-center space-x-6">
-                <li><a href="{% url 'inicio' %}" class="text-slate-300 hover:text-cyan-400 transition-colors font-medium">Inicio</a></li>
-                <li><a href="{% url 'hola_mundo' %}" class="text-slate-300 hover:text-cyan-400 transition-colors font-medium">Hola Mundo</a></li>
-                <li><a href="{% url 'Test' %}" class="text-slate-300 hover:text-cyan-400 transition-colors font-medium">Test</a></li>
-                <li><a href="{% url 'articulos_get' %}" class="text-slate-300 hover:text-cyan-400 transition-colors font-medium">Artículos</a></li>
-                <li><a href="{% url 'contacto' %}" class="text-slate-300 hover:text-cyan-400 transition-colors font-medium">Contacto</a></li>
+                <li><a href="{% url 'mainapp:inicio' %}" class="text-slate-300 hover:text-cyan-400 transition-colors font-medium">Inicio</a></li>
+                <li><a href="{% url 'mainapp:Test' %}" class="text-slate-300 hover:text-cyan-400 transition-colors font-medium">Test</a></li>
+                <li><a href="{% url 'mainapp:articulos_get' %}" class="text-slate-300 hover:text-cyan-400 transition-colors font-medium">Artículos</a></li>
+                <li><a href="{% url 'mainapp:contacto' %}" class="text-slate-300 hover:text-cyan-400 transition-colors font-medium">Contacto</a></li>
             </ul>
 
             <!-- Botón Dark Mode -->

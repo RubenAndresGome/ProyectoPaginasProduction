@@ -1,0 +1,6 @@
+<div class="my-6 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+    <table class="w-full text-left text-sm">
+        <thead class="bg-slate-100 dark:bg-slate-800"><tr>{% for c in bloque.datos.columnas %}<th class="px-4 py-2 font-bold">{{ c }}</th>{% endfor %}</tr></thead>
+        <tbody>{% for fila in bloque.datos.filas %}<tr class="border-t border-slate-200 dark:border-slate-700">{% for celda in fila %}<td class="px-4 py-2">{{ celda }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+    </table>
+</div>

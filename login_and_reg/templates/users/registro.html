@@ -2,6 +2,8 @@
 
 {% block title %}{{ title|default:"Registro de Usuario" }}{% endblock %}
 
+{% block main_class %}w-full{% endblock %}
+
 {% block content %}
 <div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-lg w-full">
@@ -98,7 +100,7 @@
                         </div>
                     </div>
                     <p class="mt-4 text-sm text-slate-300">
-                        <a href="{% url 'login_and_reg:login' %}" class="font-semibold text-violet-400 hover:text-violet-300 transition-colors">Inicia sesión aquí</a>
+                        <a href="{% url 'log_and_reg:login' %}" class="font-semibold text-violet-400 hover:text-violet-300 transition-colors">Inicia sesión aquí</a>
                     </p>
                 </div>
             </div>

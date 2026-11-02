@@ -68,8 +68,8 @@ $env:TAILWIND_BIN = $tw
 if (-not (Test-Path "$Proj\.env")) {
     Step "Creando .env de desarrollo (SQLite)"
     $key = & $py -c "from django.core.management.utils import get_random_secret_key as g; print(g())"
-    (Get-Content "$Proj\.env.example") -replace '^SECRET_KEY=.*', "SECRET_KEY=$key" |
-        Set-Content -Encoding utf8 "$Proj\.env"
+    $lineas = (Get-Content "$Proj\.env.example") -replace '^SECRET_KEY=.*', "SECRET_KEY=$key"
+    [IO.File]::WriteAllLines("$Proj\.env", $lineas, (New-Object Text.UTF8Encoding $false))  # UTF-8 sin BOM
 }
 
 # --- 7. Verificacion --------------------------------------------------------

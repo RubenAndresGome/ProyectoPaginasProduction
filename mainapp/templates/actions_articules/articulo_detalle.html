@@ -19,19 +19,21 @@
     <!-- Card del Artículo (Usando el partial) -->
     {% include 'actions_articules/_article_card.html' with article=article show_actions=True %}
 
-    <!-- Acciones Adicionales -->
+    <!-- Acciones (solo administradores) -->
+    {% if user.is_staff %}
     <div class="mt-8 flex gap-4">
-        <a href="{% url 'mainapp:articulo_editar' article.id %}" class="flex-1 px-6 py-4
-         bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl shadow-lg
-         hover:shadow-amber-500/30 transition-all duration-300 text-center">
+        <a href="{% url 'mainapp:articulo_editar' article.id %}" class="flex-1 px-6 py-4 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl shadow-lg hover:shadow-amber-500/30 transition-all duration-300 text-center">
             ✏️ Editar Artículo
         </a>
-        <a href="{% url 'mainapp:borrar_articulo' article.id %}" class="flex-1 px-6 py-4
-         bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl shadow-lg
-         hover:shadow-red-500/30 transition-all duration-300 text-center">
-            🗑️ Eliminar Artículo
-        </a>
+        <form method="post" action="{% url 'mainapp:borrar_articulo' article.id %}" class="flex-1"
+              onsubmit="return confirm('⚠️ ¿Eliminar este artículo? Esta acción no se puede deshacer.')">
+            {% csrf_token %}
+            <button type="submit" class="w-full px-6 py-4 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl shadow-lg hover:shadow-red-500/30 transition-all duration-300">
+                🗑️ Eliminar Artículo
+            </button>
+        </form>
     </div>
+    {% endif %}
 
 </div>
 {% endblock %}
