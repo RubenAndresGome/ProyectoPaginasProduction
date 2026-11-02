@@ -1,2 +1,11 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# Normaliza finales de linea: LF en el repo, nativo en checkout
+* text=auto eol=lf
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.ps1  text eol=crlf
+*.sh   text eol=lf
+*.sqlite3 binary
+*.png binary
+*.jpg binary
+*.exe binary
+tailwindcss binary

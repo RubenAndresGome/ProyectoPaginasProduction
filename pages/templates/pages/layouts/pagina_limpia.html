@@ -1,0 +1,10 @@
+{% extends 'base_pura.html' %}
+
+{% block title %}
+    {{ page.title }}
+{% endblock %}
+
+{% block content %}
+    {# Esta plantilla asume que el contenido de CKEditor incluye todo el diseño necesario #}
+    {{ page.content|safe }}
+{% endblock %}

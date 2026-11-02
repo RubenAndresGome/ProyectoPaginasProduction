@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {{ page.title }}
+{% endblock %}
+
+{% block content %}
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold text-gray-800 mb-4">{{ page.title }}</h1>
+
+        {% if page.content %}
+            <div class="prose max-w-none mb-8">
+                {{ page.content|safe }}
+            </div>
+        {% endif %}
+
+        {# Incluimos el formulario de filtros #}
+        {% include 'articulos/_filtros_blog.html' %}
+
+        {# Incluimos la plantilla que lista los artículos del blog #}
+        {% include 'articulos/lista_articulos_paginas.html' %}
+    </div>
+{% endblock %}

@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['\\(','\\)']],
+      displayMath: [['\\[','\\]']]
+    },
+    options: {
+      skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+    },
+    startup: {
+      pageReady: function () {
+        return MathJax.startup.defaultPageReady();
+      }
+    }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<style>
+  .input-ejercicio::-webkit-outer-spin-button,
+  .input-ejercicio::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .input-ejercicio {
+    appearance: textfield;
+  }
+  .input-ejercicio:focus {
+    box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15);
+  }
+  .input-ejercicio::placeholder {
+    color: rgba(255,255,255,0.25);
+  }
+
+  .math-zone { color: #f1f5f9; }
+  .math-zone mjx-container { color: #f1f5f9 !important; }
+
+  /* Floating orbs */
+  @keyframes orbFloat {
+    0%, 100% { transform: translate(0, 0); }
+    33% { transform: translate(8px, -14px); }
+    66% { transform: translate(-6px, 8px); }
+  }
+
+  /* Card entrance */
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .card-entrance {
+    opacity: 0;
+    animation: cardIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+  }
+
+  /* Glass noise */
+  .glass-panel::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.02;
+    pointer-events: none;
+    z-index: 0;
+    border-radius: inherit;
+  }
+
+  .formula-fallback {
+    font-size: 1.5rem;
+    font-family: sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    display: none;
+  }
+  .no-mathjax .formula-fallback { display: block; }
+  .no-mathjax .formula-mathjax { display: none; }
+
+  /* Option button hover glow */
+  .opt-btn {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .opt-btn:hover {
+    transform: translateX(4px) scale(1.01);
+    box-shadow: 0 4px 20px rgba(6, 182, 212, 0.12);
+  }
+
+  /* Submit button shine */
+  @keyframes btnShine {
+    0%   { transform: translateX(-100%) skewX(-15deg); }
+    100% { transform: translateX(250%) skewX(-15deg); }
+  }
+  .btn-shine { position: relative; overflow: hidden; }
+  .btn-shine::after {
+    content: '';
+    position: absolute; top: 0; left: 0;
+    width: 40%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transform: translateX(-100%) skewX(-15deg);
+  }
+  .btn-shine:hover::after {
+    animation: btnShine 0.7s ease-out;
+  }
+
+  /* Radio dot pulse */
+  @keyframes dotPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+  }
+  .opt-btn:hover .radio-dot {
+    opacity: 1;
+    animation: dotPulse 0.5s ease-out;
+  }
+</style>
+{% endblock %}
+
+{% block title %}Ejercicio • Entrenador Adaptativo{% endblock %}
+
+{% block content %}
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:3rem 1rem;position:relative;overflow:hidden;background:linear-gradient(135deg,#020617,#0f172a,#020617);">
+
+  <!-- Animated orbs -->
+  <div style="position:absolute;top:12%;left:-6rem;width:20rem;height:20rem;border-radius:50%;filter:blur(80px);pointer-events:none;background:radial-gradient(circle,rgba(6,182,212,0.08),transparent 70%);animation:orbFloat 12s ease-in-out infinite;"></div>
+  <div style="position:absolute;bottom:15%;right:-6rem;width:24rem;height:24rem;border-radius:50%;filter:blur(80px);pointer-events:none;background:radial-gradient(circle,rgba(59,130,246,0.06),transparent 70%);animation:orbFloat 15s ease-in-out infinite 3s;"></div>
+
+  <div class="relative w-full" style="max-width:28rem;">
+    <!-- Main glass card -->
+    <div class="card-entrance glass-panel" style="position:relative;background:rgba(255,255,255,0.03);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border-radius:1.5rem;border:1px solid rgba(255,255,255,0.06);box-shadow:0 24px 64px rgba(0,0,0,0.3),0 0 0 1px rgba(255,255,255,0.04),inset 0 1px 0 rgba(255,255,255,0.04);overflow:hidden;">
+
+      <!-- Cabecera -->
+      <div style="padding:2rem 2rem 0.75rem;text-align:center;">
+        <div style="display:inline-flex;align-items:center;justify-content:center;width:2.75rem;height:2.75rem;border-radius:0.75rem;background:linear-gradient(135deg,#06b6d4,#3b82f6);box-shadow:0 4px 16px rgba(6,182,212,0.25);margin-bottom:1rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" style="width:1.35rem;height:1.35rem;color:#fff;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+          </svg>
+        </div>
+
+        <h2 style="font-size:1.5rem;font-weight:700;letter-spacing:-0.02em;color:#f1f5f9;">
+          {% if tema %}{{ tema.nombre }}{% else %}Entrenamiento Aleatorio{% endif %}
+        </h2>
+
+        <p style="margin-top:0.35rem;font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#22d3ee;">
+          Nivel {{ pregunta.dificultad }}
+        </p>
+
+        <div style="width:2.5rem;height:2px;background:linear-gradient(to right,#22d3ee,#3b82f6);margin:1.25rem auto 0;border-radius:9999px;"></div>
+      </div>
+
+      <!-- Zona de la fórmula -->
+      <div style="padding:1.25rem 2rem 1rem;">
+        <div style="position:relative;border-radius:1rem;background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.05);padding:2rem;overflow-x:auto;overflow-wrap:break-word;">
+
+          <!-- Dot pattern -->
+          <div style="position:absolute;inset:0;opacity:0.04;pointer-events:none;background-image:radial-gradient(circle,#94a3b8 0.6px,transparent 0.6px);background-size:16px 16px;"></div>
+
+          <div class="formula-fallback" style="text-align:center;color:#f1f5f9;font-weight:500;">
+            {{ pregunta.enunciado_latex }}
+          </div>
+
+          <div id="formula-container" class="formula-mathjax math-zone" style="position:relative;text-align:center;font-size:1.5rem;font-family:serif;font-weight:500;letter-spacing:0.02em;line-height:1.6;">
+            {{ pregunta.enunciado_latex|safe }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulario -->
+      <form method="post" id="ejercicio-form" style="padding:0 2rem 1.5rem;">
+        {% csrf_token %}
+        <input type="hidden" name="tiempo_segundos" id="tiempo_segundos" value="0">
+
+        {% if pregunta.tipo_respuesta == 'numerica' %}
+        <div style="position:relative;margin-bottom:1rem;">
+          <!-- Accent bar -->
+          <div style="position:absolute;left:0;top:0.5rem;bottom:0.5rem;width:3px;border-radius:9999px;background:linear-gradient(to bottom,#22d3ee,#3b82f6,#22d3ee);opacity:0.5;pointer-events:none;"></div>
+
+          <input type="text" name="respuesta" inputmode="decimal" pattern="[0-9.,-]*"
+                 class="input-ejercicio"
+                 style="width:100%;text-align:center;font-size:1.75rem;font-weight:300;padding:1rem 1.25rem;border-radius:1rem;border:2px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.3);color:#f1f5f9;caret-color:#22d3ee;outline:none;transition:border-color 0.3s ease;"
+                 onfocus="this.style.borderColor='#22d3ee'" onblur="this.style.borderColor='rgba(255,255,255,0.08)'"
+                 placeholder="Tu respuesta"
+                 required autofocus>
+        </div>
+
+        <button type="submit" class="btn-shine"
+                style="width:100%;border-radius:1rem;padding:1rem 1.5rem;font-weight:600;font-size:1.1rem;color:#fff;background:linear-gradient(135deg,#0891b2,#2563eb);border:none;cursor:pointer;box-shadow:0 8px 24px rgba(6,182,212,0.2);transition:all 0.35s cubic-bezier(0.16,1,0.3,1);"
+                onmouseenter="this.style.transform='translateY(-2px) scale(1.02)';this.style.boxShadow='0 12px 32px rgba(6,182,212,0.3)'"
+                onmouseleave="this.style.transform='translateY(0) scale(1)';this.style.boxShadow='0 8px 24px rgba(6,182,212,0.2)'">
+          <span style="display:flex;align-items:center;justify-content:center;gap:0.5rem;position:relative;z-index:1;">
+            <svg xmlns="http://www.w3.org/2000/svg" style="width:1.25rem;height:1.25rem;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            Verificar
+          </span>
+        </button>
+
+        {% else %}
+        <div style="display:flex;flex-direction:column;gap:0.6rem;">
+          {% for opcion in pregunta.opciones.all %}
+          <button type="submit" name="respuesta" value="{{ opcion.texto }}"
+                  class="opt-btn"
+                  style="width:100%;text-align:left;padding:0.9rem 1.15rem;border-radius:0.85rem;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.03);color:#f1f5f9;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;"
+                  onmouseenter="this.style.borderColor='rgba(6,182,212,0.4)';this.style.background='rgba(6,182,212,0.06)'"
+                  onmouseleave="this.style.borderColor='rgba(255,255,255,0.07)';this.style.background='rgba(255,255,255,0.03)'">
+            <span class="math-zone" style="font-size:0.9rem;font-weight:500;">
+              {% if opcion.texto_latex %}
+                \({{ opcion.texto_latex|safe }}\)
+              {% else %}
+                {{ opcion.texto }}
+              {% endif %}
+            </span>
+            <div style="width:1.15rem;height:1.15rem;border-radius:50%;border:2px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:border-color 0.3s;">
+              <div class="radio-dot" style="width:0.55rem;height:0.55rem;border-radius:50%;background:#22d3ee;opacity:0;transition:opacity 0.2s;"></div>
+            </div>
+          </button>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </form>
+
+      <!-- Nota inferior -->
+      <div style="padding:0 2rem 1.75rem;">
+        <div style="display:flex;align-items:flex-start;justify-content:center;gap:0.5rem;padding:0.65rem 0.85rem;border-radius:0.65rem;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.03);">
+          <svg xmlns="http://www.w3.org/2000/svg" style="width:0.85rem;height:0.85rem;margin-top:0.1rem;color:rgba(255,255,255,0.25);flex-shrink:0;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p style="font-size:0.7rem;color:rgba(255,255,255,0.3);line-height:1.5;">
+            La dificultad se adapta de forma dinámica. ¡Completa 3 aciertos para subir de nivel!
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  function waitForMathJax() {
+    if (window.MathJax && window.MathJax.startup && window.MathJax.typesetPromise) {
+      MathJax.typesetPromise()
+        .then(function () {
+          var fb = document.querySelector('.formula-fallback');
+          if (fb) fb.style.display = 'none';
+          var mx = document.querySelector('.formula-mathjax');
+          if (mx) mx.style.display = '';
+        })
+        .catch(function (err) {
+          console.warn('MathJax typeset error:', err);
+          showFallback();
+        });
+    } else {
+      setTimeout(waitForMathJax, 100);
+    }
+  }
+
+  function showFallback() {
+    document.documentElement.classList.add('no-mathjax');
+  }
+
+  var fallbackTimeout = setTimeout(showFallback, 5000);
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', waitForMathJax);
+  } else {
+    waitForMathJax();
+  }
+
+  var origWait = waitForMathJax;
+  waitForMathJax = function () {
+    clearTimeout(fallbackTimeout);
+    origWait();
+  };
+
+  // Response time cronometer logic
+  (function() {
+    var startTime = Date.now();
+    var form = document.getElementById('ejercicio-form');
+    if (form) {
+      form.addEventListener('submit', function() {
+        var elapsed = (Date.now() - startTime) / 1000;
+        var input = document.getElementById('tiempo_segundos');
+        if (input) {
+          input.value = elapsed.toFixed(2);
+        }
+      });
+    }
+  })();
+</script>
+{% endblock %}

@@ -1,0 +1,100 @@
+<!-- Slide-over Student Ficha Analítica Partial -->
+<div class="px-6 py-6" style="color: #f1f5f9;">
+
+    <!-- ── HEADER DE ESTUDIANTE ── -->
+    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1.5rem; margin-bottom: 1.5rem;">
+        <div>
+            <h3 style="font-size: 1.5rem; font-weight: 800; color: #fff; letter-spacing: -0.02em;">{{ estudiante.username }}</h3>
+            <span style="display: inline-flex; align-items: center; gap: 0.35rem; margin-top: 0.35rem; font-size: 0.75rem; color: rgba(255,255,255,0.4); font-weight: 500;">
+                <svg style="width: 0.85rem; height: 0.85rem; color: #fbbf24;" fill="currentColor" viewBox="0 0 20 20"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path></svg>
+                Racha actual: <strong style="color: #f97316;">{{ racha }} días</strong>
+            </span>
+        </div>
+        <div style="text-align: right;">
+            <span style="font-weight: 900; font-size: 1rem; color: #c084fc; border: 1px solid rgba(192,132,252,0.2); padding: 0.25rem 0.65rem; border-radius: 0.5rem; background: rgba(192,132,252,0.05);">RANGO {{ rango }}</span>
+            <div style="font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 0.35rem; font-weight: 600;">{{ xp }} XP</div>
+        </div>
+    </div>
+
+    <!-- ── METRICAS GENERALES ── -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.75rem;">
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 0.85rem; border-radius: 0.75rem; text-align: center;">
+            <div style="font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Total Intentos</div>
+            <div style="font-size: 1.25rem; font-weight: 800; color: #fff;">{{ total_intentos }}</div>
+        </div>
+        <div style="background: rgba(16,185,129,0.02); border: 1px solid rgba(16,185,129,0.1); padding: 0.85rem; border-radius: 0.75rem; text-align: center;">
+            <div style="font-size: 0.65rem; font-weight: 700; color: #34d399; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Aciertos</div>
+            <div style="font-size: 1.25rem; font-weight: 800; color: #10b981;">{{ porcentaje_acierto }}%</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 0.85rem; border-radius: 0.75rem; text-align: center;">
+            <div style="font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Temas Activos</div>
+            <div style="font-size: 1.25rem; font-weight: 800; color: #fff;">{{ progresos_temas.count }}</div>
+        </div>
+    </div>
+
+    <!-- ── PROGRESO ADAPTATIVO POR TEMA ── -->
+    <div style="margin-bottom: 1.75rem;">
+        <h4 style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: rgba(255,255,255,0.4); letter-spacing: 0.05em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+            <svg style="width: 0.9rem; height: 0.9rem; color: #06b6d4;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+            Progreso Adaptativo de Temas
+        </h4>
+        <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+            {% for prog in progresos_temas %}
+            <div style="background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.04); padding: 0.85rem; border-radius: 0.75rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span style="font-weight: 700; font-size: 0.85rem; color: #fff;">{{ prog.tema.nombre }}</span>
+                    <span style="font-size: 0.7rem; font-weight: 700; color: #22d3ee; background: rgba(6,182,212,0.08); padding: 0.15rem 0.4rem; border-radius: 0.35rem;">Nivel {{ prog.dificultad_actual }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: rgba(255,255,255,0.35); margin-bottom: 0.35rem;">
+                    <span>Tasa de Acierto</span>
+                    <span style="font-weight: 600; color: rgba(255,255,255,0.6);">{{ prog.porcentaje_acierto }}% ({{ prog.total_aciertos }}/{{ prog.total_intentos }} intentos)</span>
+                </div>
+                <!-- Barra de Progreso -->
+                <div style="height: 3px; border-radius: 9999px; background: rgba(255,255,255,0.05); overflow: hidden;">
+                    <div style="height: 100%; border-radius: 9999px; background: linear-gradient(90deg,#06b6d4,#3b82f6); width: {{ prog.porcentaje_acierto }}%;"></div>
+                </div>
+            </div>
+            {% empty %}
+            <p style="font-size: 0.75rem; color: rgba(255,255,255,0.3); text-align: center; padding: 1rem 0;">Aún no ha practicado ningún tema específico.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ── HISTORIAL RECIENTE (CON LATEX Y TIEMPO) ── -->
+    <div>
+        <h4 style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: rgba(255,255,255,0.4); letter-spacing: 0.05em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+            <svg style="width: 0.9rem; height: 0.9rem; color: #a855f7;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            Últimos 10 Intentos
+        </h4>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 24rem; overflow-y: auto; padding-right: 0.25rem;">
+            {% for intento in ultimos_intentos %}
+            <div style="background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.03); padding: 0.75rem; border-radius: 0.65rem; display: flex; justify-content: space-between; align-items: center;">
+                <div style="flex-grow: 1; min-width: 0; padding-right: 0.5rem;">
+                    <!-- LaTeX Formula area -->
+                    <div class="math-zone-student" style="font-size: 0.85rem; font-family: serif; color: #fff; margin-bottom: 0.25rem;">
+                        \({{ intento.pregunta.enunciado_latex }}\)
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; font-size: 0.65rem; color: rgba(255,255,255,0.3);">
+                        <span style="font-weight: 600; color: rgba(255,255,255,0.45);">{{ intento.pregunta.tema.nombre }}</span>
+                        <span>·</span>
+                        <span>Respuesta: <strong>{{ intento.respuesta_dada }}</strong></span>
+                        {% if intento.tiempo_segundos %}
+                        <span>·</span>
+                        <span style="color: #60a5fa;">⏱ {{ intento.tiempo_segundos|floatformat:1 }}s</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div style="flex-shrink: 0;">
+                    {% if intento.es_correcta %}
+                    <span style="font-size: 0.65rem; font-weight: 700; color: #10b981; background: rgba(16,185,129,0.08); padding: 0.15rem 0.35rem; border-radius: 0.25rem; border: 1px solid rgba(16,185,129,0.12);">Correcto</span>
+                    {% else %}
+                    <span style="font-size: 0.65rem; font-weight: 700; color: #ef4444; background: rgba(239,68,68,0.08); padding: 0.15rem 0.35rem; border-radius: 0.25rem; border: 1px solid rgba(239,68,68,0.12);">Fallo</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <p style="font-size: 0.75rem; color: rgba(255,255,255,0.3); text-align: center; padding: 1rem 0;">No hay intentos registrados.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>

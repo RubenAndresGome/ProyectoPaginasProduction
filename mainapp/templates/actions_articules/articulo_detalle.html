@@ -1,0 +1,37 @@
+{% extends 'base_pura.html' %}
+{% load static %}
+
+{% block title %}{{ article.title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-4xl">
+
+    <!-- Botón Volver -->
+    <a href="{% url 'mainapp:articulos_get' %}" class="inline-flex items-center gap-2
+    text-slate-400 hover:text-cyan-400 mb-6 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Volver a la lista
+    </a>
+
+    <!-- Card del Artículo (Usando el partial) -->
+    {% include 'actions_articules/_article_card.html' with article=article show_actions=True %}
+
+    <!-- Acciones Adicionales -->
+    <div class="mt-8 flex gap-4">
+        <a href="{% url 'mainapp:articulo_editar' article.id %}" class="flex-1 px-6 py-4
+         bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl shadow-lg
+         hover:shadow-amber-500/30 transition-all duration-300 text-center">
+            ✏️ Editar Artículo
+        </a>
+        <a href="{% url 'mainapp:borrar_articulo' article.id %}" class="flex-1 px-6 py-4
+         bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl shadow-lg
+         hover:shadow-red-500/30 transition-all duration-300 text-center">
+            🗑️ Eliminar Artículo
+        </a>
+    </div>
+
+</div>
+{% endblock %}

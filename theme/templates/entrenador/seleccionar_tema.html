@@ -1,0 +1,422 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Elige tu Aventura Matemática{% endblock %}
+
+{% block extrahead %}
+<style>
+  /* ===== ANIMATED BACKGROUND ORBS ===== */
+  @keyframes floatOrb1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    25% { transform: translate(30px, -50px) scale(1.1); }
+    50% { transform: translate(-20px, -80px) scale(0.95); }
+    75% { transform: translate(40px, -30px) scale(1.05); }
+  }
+  @keyframes floatOrb2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    25% { transform: translate(-40px, 30px) scale(1.05); }
+    50% { transform: translate(30px, 60px) scale(0.9); }
+    75% { transform: translate(-20px, 40px) scale(1.1); }
+  }
+  .orb-float-1 { animation: floatOrb1 20s ease-in-out infinite; }
+  .orb-float-2 { animation: floatOrb2 25s ease-in-out infinite 3s; }
+
+  /* ===== STAGGERED CARD ENTRANCE ===== */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(32px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .card-reveal {
+    opacity: 0;
+    animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .card-reveal:nth-child(1) { animation-delay: 0.06s; }
+  .card-reveal:nth-child(2) { animation-delay: 0.14s; }
+  .card-reveal:nth-child(3) { animation-delay: 0.22s; }
+  .card-reveal:nth-child(4) { animation-delay: 0.30s; }
+  .card-reveal:nth-child(5) { animation-delay: 0.38s; }
+  .card-reveal:nth-child(6) { animation-delay: 0.46s; }
+  .card-reveal:nth-child(7) { animation-delay: 0.54s; }
+
+  /* ===== FLOATING CARD HOVER (3D DEPTH) ===== */
+  .glass-card {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.18), 0 0 0 1px rgba(255,255,255,0.06);
+    will-change: transform, box-shadow;
+  }
+  .glass-card:hover {
+    transform: translateY(-8px) scale(1.01);
+    box-shadow: 0 24px 64px rgba(0,0,0,0.35),
+                0 0 0 1px rgba(255,255,255,0.1),
+                0 0 60px var(--card-glow, rgba(99,102,241,0.08));
+  }
+
+  /* ===== SPOTLIGHT MOUSE TRACKER ===== */
+  .card-spotlight {
+    position: absolute; inset: 0;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+    z-index: 1;
+    border-radius: inherit;
+  }
+  .glass-card:hover .card-spotlight { opacity: 1; }
+
+  /* ===== GLASS NOISE TEXTURE ===== */
+  .glass-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.025;
+    pointer-events: none;
+    z-index: 0;
+    border-radius: inherit;
+  }
+
+  /* ===== CTA SHINE SWEEP ===== */
+  @keyframes shineSweep {
+    0%   { transform: translateX(-100%) skewX(-15deg); }
+    100% { transform: translateX(250%) skewX(-15deg); }
+  }
+  .cta-shine { position: relative; overflow: hidden; }
+  .cta-shine::after {
+    content: '';
+    position: absolute; top: 0; left: 0;
+    width: 40%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+    transform: translateX(-100%) skewX(-15deg);
+  }
+  .cta-shine:hover::after {
+    animation: shineSweep 0.75s ease-out;
+  }
+
+  /* ===== ANIMATED PROGRESS BAR ===== */
+  @keyframes fillBar {
+    from { width: 0; }
+  }
+  .progress-fill {
+    animation: fillBar 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: 0.6s;
+    width: 0;
+  }
+
+  /* ===== BADGE GLOW PULSE ===== */
+  @keyframes badgePulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.1); }
+    50% { box-shadow: 0 0 14px 3px var(--badge-glow, rgba(99,102,241,0.12)); }
+  }
+  .badge-glow { animation: badgePulse 3.5s ease-in-out infinite; }
+
+  /* ===== FIRE EMOJI PULSE ===== */
+  @keyframes firePulse {
+    0%, 100% { transform: scale(1); filter: brightness(1); }
+    50% { transform: scale(1.2); filter: brightness(1.35) drop-shadow(0 0 6px rgba(249,115,22,0.5)); }
+  }
+  .fire-pulse { animation: firePulse 1.5s ease-in-out infinite; }
+
+  /* ===== HERO ENTRANCE ===== */
+  @keyframes heroIn {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .hero-in   { opacity: 0; animation: heroIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  .hero-d1   { animation-delay: 0.1s; }
+  .hero-d2   { animation-delay: 0.25s; }
+  .hero-d3   { animation-delay: 0.4s; }
+
+  /* ===== FEATURED CARD BORDER PULSE ===== */
+  @keyframes borderPulse {
+    0%, 100% { border-color: rgba(99,102,241,0.15); }
+    50%      { border-color: rgba(99,102,241,0.45); }
+  }
+  .featured-pulse { animation: borderPulse 4s ease-in-out infinite; }
+
+  /* ===== RANGO BADGE SHIMMER ===== */
+  @keyframes shimmer {
+    0%   { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  .rango-shimmer {
+    background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%);
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ==================== ANIMATED BACKGROUND ORBS ==================== -->
+<div class="orb-float-1" style="position:absolute;top:5%;left:-10%;width:28rem;height:28rem;border-radius:50%;filter:blur(120px);pointer-events:none;background:radial-gradient(circle,rgba(99,102,241,0.14),transparent 70%);"></div>
+<div class="orb-float-2" style="position:absolute;bottom:10%;right:-10%;width:32rem;height:32rem;border-radius:50%;filter:blur(120px);pointer-events:none;background:radial-gradient(circle,rgba(168,85,247,0.11),transparent 70%);"></div>
+<div class="orb-float-1" style="position:absolute;top:55%;left:25%;width:20rem;height:20rem;border-radius:50%;filter:blur(100px);pointer-events:none;background:radial-gradient(circle,rgba(6,182,212,0.07),transparent 70%);animation-delay:6s;"></div>
+
+<!-- ==================== HERO SECTION ==================== -->
+<div class="text-center relative z-10" style="margin-bottom:3.5rem;">
+
+    <!-- Stats widget — advanced glassmorphism -->
+    <div class="hero-in inline-flex items-center gap-3 rounded-2xl px-5 py-2.5"
+         style="background:rgba(255,255,255,0.035);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border:1px solid rgba(255,255,255,0.07);box-shadow:0 8px 32px rgba(0,0,0,0.15),inset 0 1px 0 rgba(255,255,255,0.04);">
+        <svg style="width:1.25rem;height:1.25rem;color:#818cf8;" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.25 6.087c0-.355.186-.676.401-.959.221-.29.349-.634.349-1.003 0-1.036-1.007-1.875-2.25-1.875s-2.25.84-2.25 1.875c0 .369.128.713.349 1.003.215.283.401.604.401.959v0a.64.64 0 01-.657.643 48.491 48.491 0 01-4.163-.3c.186 1.613.293 3.25.315 4.907a.656.656 0 01-.658.663v0c-.355 0-.676-.186-.959-.401a1.647 1.647 0 00-1.003-.349c-1.036 0-1.875 1.007-1.875 2.25s.84 2.25 1.875 2.25c.369 0 .713-.128 1.003-.349.283-.215.604-.401.959-.401v0c.31 0 .555.26.532.57a48.039 48.039 0 01-.642 5.056c1.518.19 3.058.309 4.616.354a.64.64 0 00.657-.643v0c0-.355-.186-.676-.401-.959a1.647 1.647 0 01-.349-1.003c0-1.035 1.008-1.875 2.25-1.875 1.243 0 2.25.84 2.25 1.875 0 .369-.128.713-.349 1.003-.215.283-.4.604-.4.959v0c0 .333.277.599.61.58a48.1 48.1 0 005.427-.63 48.05 48.05 0 00.582-4.717.532.532 0 00-.533-.57v0c-.355 0-.676.186-.959.401-.29.221-.634.349-1.003.349-1.035 0-1.875-1.007-1.875-2.25s.84-2.25 1.875-2.25c.37 0 .713.128 1.003.349.283.215.604.401.959.401v0a.656.656 0 00.658-.663 48.422 48.422 0 00-.37-5.36c-1.886.342-3.81.574-5.766.689a.578.578 0 01-.61-.58v0z"/></svg>
+        <span style="font-weight:600;font-size:0.8rem;color:rgba(255,255,255,0.5);letter-spacing:0.03em;">Rango</span>
+        <span class="rango-shimmer" style="font-weight:800;font-size:0.85rem;color:#c084fc;padding:0.15rem 0.5rem;border-radius:0.375rem;border:1px solid rgba(192,132,252,0.2);">{{ rango }}</span>
+        <div style="width:1px;height:1rem;background:rgba(255,255,255,0.08);"></div>
+        <svg style="width:1rem;height:1rem;color:#818cf8;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        <span style="font-weight:700;font-size:0.85rem;background:linear-gradient(to right,#f97316,#ef4444);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Racha: {{ racha_dias }}d</span>
+        <svg class="fire-pulse" style="width:1.25rem;height:1.25rem;color:#f97316;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 23a7.5 7.5 0 01-5.138-12.963C8.204 8.774 11.5 6.5 11 1.5c6 4 9 8 3 14 1 0 2.5 0 5-2.47.27.773.5 1.604.5 2.47A7.5 7.5 0 0112 23z"/></svg>
+        <div style="width:1px;height:1rem;background:rgba(255,255,255,0.08);"></div>
+        <span style="font-weight:600;font-size:0.8rem;color:rgba(255,255,255,0.4);">{{ xp }} XP</span>
+    </div>
+
+    <!-- Title -->
+    <h1 class="hero-in hero-d1" style="margin-top:2.25rem;line-height:0.92;letter-spacing:-0.03em;font-size:clamp(2.5rem,5.5vw,4rem);font-weight:900;">
+        <span style="background:linear-gradient(135deg,#818cf8,#a78bfa,#e879f9);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Elige un tema</span><br>
+        <span style="color:#fff;">para practicar</span>
+    </h1>
+    <p class="hero-in hero-d2" style="color:rgba(255,255,255,0.32);max-width:34rem;margin:1.25rem auto 0;font-size:1rem;line-height:1.65;">
+        Domina las matemáticas con niveles estilo videojuego.
+        <span style="color:rgba(255,255,255,0.55);font-weight:500;">Sube tu rango de C hasta SSS.</span>
+    </p>
+</div>
+
+<!-- ==================== BUSCADOR ==================== -->
+<div class="hero-in hero-d3" style="margin-bottom: 2rem; position: relative; z-index: 10;">
+    <div style="position: relative; max-width: 32rem; margin: 0 auto;">
+        <div style="position: absolute; top: 0; bottom: 0; left: 0; padding-left: 1.25rem; display: flex; align-items: center; pointer-events: none;">
+            <svg style="width: 1.25rem; height: 1.25rem; color: rgba(255,255,255,0.4);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </div>
+        <input type="text" id="buscador-temas" placeholder="Buscar un tema específico..." 
+               style="width: 100%; padding: 1rem 1rem 1rem 3.25rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 1rem; color: #fff; font-size: 1rem; outline: none; backdrop-filter: blur(12px); box-shadow: 0 4px 20px rgba(0,0,0,0.1);"
+               onfocus="this.style.borderColor='rgba(99,102,241,0.5)'; this.style.background='rgba(255,255,255,0.06)';"
+               onblur="this.style.borderColor='rgba(255,255,255,0.08)'; this.style.background='rgba(255,255,255,0.03)';">
+    </div>
+</div>
+
+<!-- ==================== GRID DE TEMAS ==================== -->
+<div id="temas-grid" class="hero-in hero-d3" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(340px, 1fr));gap:1.5rem;position:relative;z-index:10;">
+
+    {% for tema in temas %}
+    <div class="card-reveal glass-card tema-card {% if tema.es_destacado %}featured-pulse{% endif %}"
+         style="border-radius:1rem;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.06);"
+         data-card data-nombre="{{ tema.nombre|lower }}"
+         data-glow="rgba({{ tema.glow_color }},0.1)"
+         data-badge-glow="rgba({{ tema.glow_color }},0.15)">
+
+        <!-- Spotlight overlay -->
+        <div class="card-spotlight"></div>
+
+        <!-- ── Header ── -->
+        <div class="dynamic-bg {% if tema.es_destacado %}min-h-[10rem]{% endif %}"
+             style="padding:1.25rem 1.25rem 1rem;position:relative;overflow:hidden;z-index:2;"
+             data-bg="{{ tema.gradient }}">
+            <!-- Decorative circles -->
+            <div style="position:absolute;top:0;right:0;width:8rem;height:8rem;background:rgba(255,255,255,0.08);border-radius:50%;transform:translate(40%,-40%);"></div>
+            <div style="position:absolute;bottom:0;left:0;width:5rem;height:5rem;background:rgba(0,0,0,0.08);border-radius:50%;transform:translate(-40%,40%);"></div>
+            {% if tema.es_destacado %}
+            <div style="position:absolute;top:50%;right:15%;width:6rem;height:6rem;background:rgba(255,255,255,0.05);border-radius:50%;transform:translateY(-50%);"></div>
+            {% endif %}
+
+            <div style="position:relative;display:flex;justify-content:space-between;align-items:flex-start;">
+                <!-- Icon -->
+                <div style="background:rgba(255,255,255,0.18);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:0.75rem;padding:0.6rem;border:1px solid rgba(255,255,255,0.12);">
+                    <i class="fas fa-{{ tema.icono|default:'shapes' }}" style="color:#fff;font-size:1.4rem;"></i>
+                </div>
+                <!-- Rankeable badge -->
+                <span class="badge-glow" style="background:rgba(255,255,255,0.12);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:0.2rem 0.65rem;border-radius:9999px;font-size:0.6rem;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:0.06em;display:inline-flex;align-items:center;gap:0.3rem;border:1px solid rgba(255,255,255,0.18);">
+                    <svg style="width:0.7rem;height:0.7rem;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    Rankeable
+                </span>
+            </div>
+
+            <h2 class="{% if tema.es_destacado %}text-[1.75rem]{% else %}text-[1.4rem]{% endif %}"
+                style="font-weight:700;color:#fff;margin-top:0.85rem;position:relative;letter-spacing:-0.01em;">{{ tema.nombre }}</h2>
+            <p class="dynamic-color"
+               style="font-size:0.8rem;margin-top:0.2rem;position:relative;opacity:0.85;line-height:1.4;"
+               data-color="{{ tema.desc_color }}">
+                {% if tema.es_destacado %}
+                    {{ tema.descripcion|truncatewords:25 }}
+                {% else %}
+                    {{ tema.descripcion|truncatewords:12 }}
+                {% endif %}
+            </p>
+        </div>
+
+        <!-- ── Body ── -->
+        <div style="padding:1rem 1.25rem 1.25rem;position:relative;z-index:2;">
+
+            <!-- Progress bar (animated) -->
+            {% if tema.progreso %}
+            <div style="margin-bottom:0.85rem;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.3rem;">
+                    <span class="dynamic-color"
+                          style="font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;"
+                          data-color="{{ tema.badge_text }}">Progreso</span>
+                    <span style="font-size:0.6rem;font-weight:600;color:rgba(255,255,255,0.35);">{{ tema.progreso.porcentaje_acierto }}%</span>
+                </div>
+                <div style="height:3px;border-radius:9999px;background:rgba(255,255,255,0.06);overflow:hidden;">
+                    <div class="progress-fill dynamic-progress-bg"
+                         style="height:100%;border-radius:9999px;"
+                         data-badge-text="{{ tema.badge_text }}"
+                         data-progress-pct="{{ tema.progreso.porcentaje_acierto }}%"></div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div style="display:flex;align-items:center;justify-content:space-between;padding-top:0.7rem;border-top:1px solid rgba(255,255,255,0.04);">
+                <div style="display:flex;flex-direction:column;gap:0.2rem;">
+                    {% if tema.progreso %}
+                    <span class="dynamic-badge-pill"
+                          style="display:inline-flex;align-items:center;gap:0.2rem;font-size:0.7rem;font-weight:600;padding:0.2rem 0.45rem;border-radius:0.4rem;"
+                          data-bg="{{ tema.badge_bg }}"
+                          data-color="{{ tema.badge_text }}">
+                        ⚡ Nivel {{ tema.progreso.dificultad_actual }}
+                    </span>
+                    <span style="font-size:0.6rem;color:rgba(255,255,255,0.25);">
+                        {{ tema.progreso.total_intentos }} intentos
+                    </span>
+                    {% else %}
+                    <span style="display:inline-flex;align-items:center;gap:0.2rem;font-size:0.7rem;font-weight:600;padding:0.2rem 0.45rem;border-radius:0.4rem;background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.35);">
+                        Nivel 1
+                    </span>
+                    <span style="font-size:0.6rem;color:rgba(255,255,255,0.2);">Sin iniciar</span>
+                    {% endif %}
+                </div>
+
+                <!-- Practicar CTA -->
+                <a href="{% url 'entrenador:practicar_tema' tema.slug %}" class="cta-shine"
+                   style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.55rem 1rem;font-weight:600;border-radius:0.65rem;font-size:0.8rem;color:#fff;background:linear-gradient(135deg,#6366f1,#8b5cf6);box-shadow:0 4px 20px rgba(99,102,241,0.25);transition:all 0.35s cubic-bezier(0.16,1,0.3,1);"
+                   onmouseenter="this.style.boxShadow='0 8px 30px rgba(99,102,241,0.4)';this.style.transform='translateY(-2px) scale(1.04)'"
+                   onmouseleave="this.style.boxShadow='0 4px 20px rgba(99,102,241,0.25)';this.style.transform='translateY(0) scale(1)'">
+                    <svg style="width:0.9rem;height:0.9rem;" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    Practicar
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+        <p style="text-align:center;color:rgba(255,255,255,0.35);grid-column:1/-1;padding:3rem 0;">No hay temas disponibles. Contacta al docente.</p>
+    {% endfor %}
+</div>
+
+<!-- ==================== CTA ALEATORIO Y ACCESO DIRECTO ==================== -->
+<div class="text-center relative z-10" style="margin-top:3.5rem; display:flex; justify-content:center; gap:1rem; flex-wrap:wrap;">
+    
+    <!-- Acceso directo a Aritmética (Sumas, Restas, Fracciones) -->
+    <a href="{% url 'entrenador:practicar_tema' 'aritmetica' %}" class="cta-shine"
+       style="display:inline-flex;align-items:center;gap:0.75rem;padding:0.85rem 2rem;border-radius:1rem;font-weight:700;font-size:0.85rem;color:#fff;background:linear-gradient(135deg,#10b981,#059669);border:1px solid rgba(16,185,129,0.3);box-shadow:0 8px 32px rgba(16,185,129,0.25);transition:all 0.35s cubic-bezier(0.16,1,0.3,1);"
+       onmouseenter="this.style.transform='translateY(-3px) scale(1.03)';this.style.boxShadow='0 16px 48px rgba(16,185,129,0.4)'"
+       onmouseleave="this.style.transform='translateY(0) scale(1)';this.style.boxShadow='0 8px 32px rgba(16,185,129,0.25)'">
+        <svg style="width:1.15rem;height:1.15rem;color:#fff;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Acceso Directo: Sumas, Restas y Fracciones
+        <svg style="width:0.9rem;height:0.9rem;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+    </a>
+
+    <!-- Practicar sin tema específico -->
+    <a href="{% url 'entrenador:practicar' %}" class="cta-shine"
+       style="display:inline-flex;align-items:center;gap:0.75rem;padding:0.85rem 2rem;border-radius:1rem;font-weight:700;font-size:0.85rem;color:#fff;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 8px 32px rgba(0,0,0,0.2),inset 0 1px 0 rgba(255,255,255,0.03);transition:all 0.35s cubic-bezier(0.16,1,0.3,1);"
+       onmouseenter="this.style.background='rgba(255,255,255,0.09)';this.style.transform='translateY(-3px) scale(1.03)';this.style.boxShadow='0 16px 48px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.06)'"
+       onmouseleave="this.style.background='rgba(255,255,255,0.05)';this.style.transform='translateY(0) scale(1)';this.style.boxShadow='0 8px 32px rgba(0,0,0,0.2),inset 0 1px 0 rgba(255,255,255,0.03)'">
+        <svg style="width:1.15rem;height:1.15rem;color:#818cf8;" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"/></svg>
+        Práctica Aleatoria
+    </a>
+</div>
+<p style="color:rgba(255,255,255,0.18);font-size:0.7rem;margin-top:0.65rem;letter-spacing:0.03em; text-align: center;">Entrenamiento aleatorio · Mejora todas tus habilidades</p>
+
+<!-- ==================== INFO BANNER ==================== -->
+<div style="margin-top:3.5rem;padding:1.5rem;border-radius:1rem;border:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.025);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:1rem;position:relative;z-index:10;box-shadow:0 4px 24px rgba(0,0,0,0.1),inset 0 1px 0 rgba(255,255,255,0.03);">
+    <div style="display:flex;align-items:center;gap:1rem;">
+        <div style="background:rgba(99,102,241,0.08);border-radius:0.75rem;padding:0.75rem;border:1px solid rgba(99,102,241,0.1);">
+            <svg style="width:1.75rem;height:1.75rem;color:#818cf8;" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-4.5A6.75 6.75 0 007.5 9.75v4.5m9 4.5H7.5m9 0a3 3 0 003-3V9.75M12 3v1.5m-6.364.636l1.06 1.061M4.5 12H3m17.25-5.303l-1.06 1.061M19.5 12H21"/></svg>
+        </div>
+        <div>
+            <p style="font-weight:700;color:#fff;letter-spacing:-0.01em;">Sistema de rangos desbloqueable</p>
+            <p style="font-size:0.8rem;color:rgba(255,255,255,0.3);margin-top:0.15rem;">Completa misiones y sube de A → SSS. Cada rango otorga gemas y recompensas.</p>
+        </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+        <span style="background:rgba(245,158,11,0.08);color:#fbbf24;padding:0.35rem 0.7rem;border-radius:0.4rem;font-size:0.7rem;font-weight:600;border:1px solid rgba(245,158,11,0.12);display:inline-flex;align-items:center;gap:0.35rem;">
+            <svg style="width:0.8rem;height:0.8rem;" viewBox="0 0 24 24" fill="currentColor"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg>
+            Top learners
+        </span>
+        <span style="background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.4);padding:0.35rem 0.7rem;border-radius:0.4rem;font-size:0.7rem;font-weight:500;border:1px solid rgba(255,255,255,0.05);display:inline-flex;align-items:center;gap:0.35rem;">
+            <svg style="width:0.8rem;height:0.8rem;color:#34d399;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/></svg>
+            +{{ xp }} XP total
+        </span>
+    </div>
+</div>
+
+<!-- ==================== SPOTLIGHT + BENTO GRID JS ==================== -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ── Inyección dinámica de estilos para evitar errores de linter CSS en el IDE ──
+    document.querySelectorAll('.tema-card').forEach(function(card) {
+        var glow = card.getAttribute('data-glow');
+        var badgeGlow = card.getAttribute('data-badge-glow');
+        if (glow) card.style.setProperty('--card-glow', glow);
+        if (badgeGlow) card.style.setProperty('--badge-glow', badgeGlow);
+    });
+
+    document.querySelectorAll('.dynamic-bg').forEach(function(el) {
+        var bg = el.getAttribute('data-bg');
+        if (bg) el.style.background = bg;
+    });
+
+    document.querySelectorAll('.dynamic-color').forEach(function(el) {
+        var color = el.getAttribute('data-color');
+        if (color) el.style.color = color;
+    });
+
+    document.querySelectorAll('.dynamic-badge-pill').forEach(function(el) {
+        var bg = el.getAttribute('data-bg');
+        var color = el.getAttribute('data-color');
+        if (bg) el.style.background = bg;
+        if (color) el.style.color = color;
+    });
+
+    document.querySelectorAll('.dynamic-progress-bg').forEach(function(el) {
+        var badgeText = el.getAttribute('data-badge-text');
+        var pct = el.getAttribute('data-progress-pct');
+        if (badgeText) {
+            el.style.background = 'linear-gradient(90deg, ' + badgeText + ', ' + badgeText + '88)';
+        }
+        if (pct) {
+            el.style.width = pct;
+        }
+    });
+
+    // ── Spotlight mouse-tracking effect ──
+    document.querySelectorAll('[data-card]').forEach(function(card) {
+        var spot = card.querySelector('.card-spotlight');
+        if (!spot) return;
+        card.addEventListener('mousemove', function(e) {
+            var r = card.getBoundingClientRect();
+            var x = e.clientX - r.left;
+            var y = e.clientY - r.top;
+            spot.style.background = 'radial-gradient(650px circle at ' + x + 'px ' + y + 'px, rgba(255,255,255,0.045), transparent 40%)';
+        });
+        card.addEventListener('mouseleave', function() {
+            spot.style.background = '';
+        });
+    });
+
+    // ── Filtro de búsqueda ──
+    var buscador = document.getElementById('buscador-temas');
+    if (buscador) {
+        buscador.addEventListener('input', function(e) {
+            var filtro = e.target.value.toLowerCase();
+            document.querySelectorAll('.tema-card').forEach(function(card) {
+                var nombre = card.getAttribute('data-nombre');
+                if (nombre.indexOf(filtro) > -1) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

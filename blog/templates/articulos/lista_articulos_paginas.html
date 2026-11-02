@@ -1,0 +1,22 @@
+{# Este es un fragmento que se incluye, no una página completa. #}
+
+{% if articulos %}
+    <div class="space-y-6 mt-8">
+    {% for articulo in articulos %}
+        <div class="p-6 bg-slate-800 rounded-xl border border-slate-700 shadow-lg hover:shadow-orange-500/20 transition-shadow duration-300">
+            <h3 class="text-2xl font-bold text-orange-400">
+                {# CORREGIDO: Se ha añadido el enlace a la vista de detalle #}
+                <a href="{% url 'blog:detalle_publicacion' id=articulo.id %}" class="hover:underline">
+                    {{ articulo.title }}
+                </a>
+            </h3>
+            <p class="text-sm text-slate-400 mt-1">
+                Publicado: {{ articulo.created_at|date:"d M, Y" }}
+            </p>
+            {# Aquí podrías añadir un extracto del contenido si tu modelo lo tuviera #}
+        </div>
+    {% endfor %}
+    </div>
+{% else %}
+    <p class="text-slate-400 mt-8">No hay artículos para mostrar en este momento.</p>
+{% endif %}

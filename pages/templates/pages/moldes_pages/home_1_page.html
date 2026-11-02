@@ -1,0 +1,138 @@
+{% extends 'base_pura.html' %}
+{% load static %}
+
+{% block title %}{{ page.title }}{% endblock %}
+
+{% block content %}
+
+		<!-- header -->
+		<header class="w-full px-6 bg-white">
+			<div class="container mx-auto max-w-4xl md:flex justify-between items-center">
+				<a href="{% url 'mainapp:index' %}" class="block py-6 w-full text-center md:text-left md:w-auto text-gray-600 no-underline flex justify-center items-center">
+					Vertigo {# Podrías hacer esto dinámico con un campo de logo_text en el modelo #}
+				</a>
+				<div class="w-full md:w-auto mb-6 md:mb-0 text-center md:text-right">
+					<a href="#" class="inline-block no-underline bg-black text-white text-sm py-2 px-3">Sign Up</a> {# Podrías hacer esto dinámico con un campo de cta_header_text y cta_header_link #}
+				</div>
+			</div>
+		</header>
+		<!-- /header -->
+
+		<!-- navigation -->
+		<nav class="w-full bg-white md:pt-0 px-6 shadow-lg relative z-20 border-t border-b border-gray-400">
+			<div class="container mx-auto max-w-4xl md:flex justify-between items-center text-sm md:text-md md:justify-start">
+				<div class="w-full md:w-1/2 text-center md:text-left py-4 flex flex-wrap justify-center items-stretch md:justify-start md:items-start">
+					{# Estos enlaces podrían venir de un campo ManyToMany o JSONField en el modelo si fueran dinámicos #}
+					<a href="{% url 'mainapp:index' %}" class="px-2 md:pl-0 md:mr-3 md:pr-3 text-gray-700 no-underline md:border-r border-gray-400">Home</a>
+					<a href="#" class="px-2 md:pl-0 md:mr-3 md:pr-3 text-gray-700 no-underline md:border-r border-gray-400">Products</a>
+					<a href="#" class="px-2 md:pl-0 md:mr-3 md:pr-3 text-gray-700 no-underline md:border-r border-gray-400">About Us</a>
+					<a href="#" class="px-2 md:pl-0 md:mr-3 md:pr-3 text-gray-700 no-underline md:border-r border-gray-400">News</a>
+					<a href="#" class="px-2 md:pl-0 md:mr-3 md:pr-3 text-gray-700 no-underline">Contact</a>
+				</div>
+				<div class="w-full md:w-1/2 text-center md:text-right pb-4 md:p-0">
+					<input type="search" placeholder="Search..." class="bg-gray-300 border text-sm p-1" /> {# Esto podría ser un formulario de búsqueda dinámico #}
+				</div>
+			</div>
+		</nav>
+		<!-- /navigation -->
+
+		<!-- hero -->
+		<div class="w-full py-24 px-6 bg-cover bg-no-repeat bg-center relative z-10"
+            {% if page.hero_background_image %}style="background-image: url('{{ page.hero_background_image.url }}');"{% endif %}>
+
+			<div class="container max-w-4xl mx-auto text-center">
+				<h1 class="text-xl leading-tight md:text-3xl text-center text-gray-100 mb-3">{{ page.hero_title }}</h1>
+				<p class="text-md md:text-lg text-center text-white ">{{ page.hero_subtitle }}</p>
+
+				{% if page.hero_cta_link %}
+				<a href="{{ page.hero_cta_link }}" class="mt-6 inline-block bg-white text-black no-underline px-4 py-3 shadow-lg">{{ page.hero_cta_text }}</a>
+				{% endif %}
+			</div>
+
+		</div>
+		<!-- /hero -->
+
+		<!-- home content -->
+		<div class="w-full px-6 py-12 bg-white">
+			<div class="container max-w-4xl mx-auto text-center pb-10">
+
+				<h3 class="text-xl md:text-3xl leading-tight text-center max-w-md mx-auto text-gray-900 mb-12">
+					{{ page.content_section_title }}
+				</h3>
+
+				{% if page.content_cta_link %}
+				<a href="{{ page.content_cta_link }}" class="bg-black text-white px-4 py-3 no-underline">{{ page.content_cta_text }}</a>
+				{% endif %}
+
+			</div>
+
+			<div class="container max-w-4xl mx-auto text-center flex flex-wrap items-start md:flex-no-wrap">
+
+				{# Card 1 #}
+				<div class="my-4 w-full md:w-1/3 flex flex-col items-center justify-center px-4">
+					{% if page.card1_image %}
+					<img src="{{ page.card1_image.url }}" class="w-full h-64 object-cover mb-6" alt="{{ page.card1_title }}" />
+					{% endif %}
+					<h2 class="text-xl leading-tight mb-2">{{ page.card1_title }}</h2>
+					<p class="mt-3 mx-auto text-sm leading-normal">{{ page.card1_description }}</p>
+				</div>
+
+				{# Card 2 #}
+				<div class="my-4 w-full md:w-1/3 flex flex-col items-center justify-center px-4">
+					{% if page.card2_image %}
+					<img src="{{ page.card2_image.url }}" class="w-full h-64 object-cover mb-6" alt="{{ page.card2_title }}" />
+					{% endif %}
+					<h2 class="text-xl leading-tight mb-2">{{ page.card2_title }}</h2>
+					<p class="mt-3 mx-auto text-sm leading-normal">{{ page.card2_description }}</p>
+				</div>
+
+				{# Card 3 #}
+				<div class="my-4 w-full md:w-1/3 flex flex-col items-center justify-center px-4">
+					{% if page.card3_image %}
+					<img src="{{ page.card3_image.url }}" class="w-full h-64 object-cover mb-6" alt="{{ page.card3_title }}" />
+					{% endif %}
+					<h2 class="text-xl leading-tight mb-2">{{ page.card3_title }}</h2>
+					<p class="mt-3 mx-auto text-sm leading-normal">{{ page.card3_description }}</p>
+				</div>
+
+			</div>
+		</div>
+		<!-- /home content -->
+
+		<!-- about -->
+		<div class="w-full px-6 py-12 text-left bg-gray-300 text-gray-700 leading-normal">
+			<div class="container max-w-4xl mx-auto flex justify-center flex-wrap md:flex-no-wrap">
+				<div class="w-full md:w-1-3">
+					<h3 class="text-3xl mb-8 text-black leading-tight">
+						{{ page.about_title }}
+					</h3>
+
+					<div class="prose max-w-none">
+						{{ page.about_text_paragraph1|safe }}
+						{{ page.about_text_paragraph2|safe }}
+					</div>
+				</div>
+				<div class="w-full md:w-2-3 pt-10 md:px-6 md:pt-0">
+					{% if page.about_image %}
+					<img src="{{ page.about_image.url }}" class="w-full h-auto" alt="{{ page.about_title }}" />
+					{% endif %}
+				</div>
+			</div>
+		</div>
+		<!-- /about -->
+
+		<!-- footer -->
+		<footer class="w-full bg-white px-6 border-t">
+			<div class="container mx-auto max-w-4xl py-6 flex flex-wrap md:flex-no-wrap justify-between items-center text-sm">
+				&copy;2019 Your Company. All rights reserved. {# Esto podría ser un campo de copyright en el modelo #}
+				<div class="pt-4 md:p-0 text-center md:text-right text-xs">
+					{# Estos enlaces podrían ser dinámicos #}
+					<a href="#" class="text-black no-underline hover:underline">Privacy Policy</a>
+					<a href="#" class="text-black no-underline hover:underline ml-4">Terms &amp; Conditions</a>
+					<a href="#" class="text-black no-underline hover:underline ml-4">Contact Us</a>
+				</div>
+			</div>
+		</footer>
+		<!-- /footer -->
+
+{% endblock %}

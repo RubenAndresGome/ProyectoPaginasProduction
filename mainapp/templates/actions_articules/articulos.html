@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Artículos{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    {% if messages  %}
+        {% for message in messages %}
+            <section><div class="alert alert-{{ message.tags }}">{{ message }}</div></section>
+        {% endfor %}
+
+    {% endif %}
+    <!-- Encabezado -->
+    <div class="mb-8">
+        <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 mb-2">
+            📚 Artículos
+        </h1>
+
+        <a href="{% url 'mainapp:create_full_article' %}" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-bold rounded-lg transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/30 flex items-center gap-2 w-fit">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        Crear nuevo artículo
+    </a>
+
+        <p class="text-slate-500 dark:text-slate-400">{{ mensaje }}</p>
+    </div>
+
+    <!-- ✅ BARRA DE BÚSQUEDA -->
+    <div class="mb-6">
+        <form method="GET" action="{% url 'mainapp:articulos_get' %}" class="flex gap-4 max-w-xl">
+            <input
+                type="text"
+                name="q"
+                value="{{ query }}"
+                placeholder="Buscar por título..."
+                class="flex-grow px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            >
+            <button
+                type="submit"
+                class="px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg transition-all duration-300 shadow-lg hover:shadow-cyan-500/30"
+            >
+                🔍 Buscar
+            </button>
+            {% if query %}
+            <a
+                href="{% url 'mainapp:articulos_get' %}"
+                class="px-6 py-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 font-bold rounded-lg transition-all duration-300"
+            >
+                ✕ Limpiar
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Contador de resultados -->
+    <div class="mb-4 flex justify-between items-center">
+        <p class="text-slate-400 text-sm">
+            Mostrando <span class="text-cyan-400 font-bold">{{ total }}</span> artículo(s)
+        </p>
+    </div>
+
+    <!-- Grid de Cards -->
+    {% if articulos %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for article in articulos %}
+                {% include 'actions_articules/_article_card.html' with article=article show_actions=True %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Estado vacío -->
+        <div class="text-center py-16 bg-slate-800/50 rounded-2xl border border-slate-700">
+            <svg class="w-20 h-20 mx-auto text-slate-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+            </svg>
+            <h3 class="text-xl font-bold text-slate-300 mb-2">No se encontraron artículos</h3>
+            <p class="text-slate-500 mb-6">
+                {% if query %}
+                    Intenta con otro término de búsqueda
+                {% else %}
+                    Comienza creando tu primer artículo
+                {% endif %}
+            </p>
+            {% if query %}
+                <a href="{% url 'mainapp:articulos_get' %}" class="inline-flex items-center gap-2 px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg transition-all">
+                    Ver Todos
+                </a>
+            {% else %}
+                <a href="{% url 'mainapp:create_full_article' %}" class="inline-flex items-center gap-2 px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg transition-all">
+                    Crear Primero
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

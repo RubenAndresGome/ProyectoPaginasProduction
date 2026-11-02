@@ -1,0 +1,91 @@
+{# blog/templates/articulos/_card_publicacion.html #}
+{# Template parcial reutilizable para mostrar un artículo del blog #}
+{# Variables esperadas: #}
+{# - articulo: Objeto Articulo_Page #}
+
+<div class="bg-slate-800/80 backdrop-blur-sm rounded-xl border border-slate-700 shadow-lg hover:shadow-cyan-500/20 transition-all duration-300 hover:border-cyan-700 overflow-hidden">
+    <!-- Cabecera de la card -->
+    <div class="bg-slate-900/50 px-6 py-4 border-b border-slate-700 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-white">
+                    <a href="{% url 'blog:detalle_publicacion' id=articulo.id %}" class="hover:underline">
+                        {{ articulo.title }}
+                    </a>
+                </h3>
+                <p class="text-xs text-slate-400 font-mono">ID: #{{ articulo.id }}</p>
+            </div>
+        </div>
+
+        <!-- Estado (Publicado/Borrador) -->
+        <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider {% if articulo.publicado %}bg-emerald-500/20 text-emerald-400 border border-emerald-500/50{% else %}bg-amber-500/20 text-amber-400 border border-amber-500/50{% endif %}">
+            {% if articulo.publicado %}
+                <span class="w-2 h-2 bg-emerald-500 rounded-full inline-block mr-1 animate-pulse"></span>
+                Publicado
+            {% else %}
+                <span class="w-2 h-2 bg-amber-500 rounded-full inline-block mr-1"></span>
+                Borrador
+            {% endif %}
+        </span>
+    </div>
+
+    <!-- Sección de imagen del artículo -->
+    {% if articulo.imagen %}
+        <div class="mb-4 rounded-xl overflow-hidden shadow-md">
+            <img src="{{ articulo.imagen.url }}" alt="{{ articulo.title }}" class="w-full h-48 object-cover">
+        </div>
+    {% else %}
+        <div class="bg-gray-800 flex items-center justify-center h-48 text-slate-400 text-sm">
+            <p>Este artículo no tiene imagen asociada</p>
+        </div>
+    {% endif %}
+
+    <!-- Cuerpo de la card (Contenido) -->
+    <div class="px-6 py-4">
+        <div class="prose prose-invert max-w-none">
+            <p class="text-slate-300 leading-relaxed">
+                {{ articulo.content|truncatewords:30|safe }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Pie de la card (Metadatos) -->
+    <div class="bg-slate-900/30 px-6 py-4 border-t border-slate-700">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <!-- Metadatos -->
+            <div class="flex flex-wrap gap-4 text-xs text-slate-400 font-mono">
+                <div class="flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <span>Creado: {{ articulo.created_at|date:"d/m/Y" }}</span>
+                </div>
+                {% if articulo.modified_at %}
+                <div class="flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    <span>Actualizado: {{ articulo.modified_at|date:"d/m/Y" }}</span>
+                </div>
+                {% endif %}
+                {% if articulo.categoria.all %}
+                    <div class="flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5.5c.58 0 1.13.2 1.55.55L20.5 11.5c.4.4.4 1.05 0 1.45l-6.5 6.5c-.4.4-1.05.4-1.45 0L3.55 13.5c-.35-.4-.55-.97-.55-1.55V7c0-2.21 1.79-4 4-4z"></path>
+                        </svg>
+                        <span>Categorías:
+                            {% for cat in articulo.categoria.all %}
+                                <span class="bg-slate-700 px-2 py-0.5 rounded-full text-xs">{{ cat.name }}</span>{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

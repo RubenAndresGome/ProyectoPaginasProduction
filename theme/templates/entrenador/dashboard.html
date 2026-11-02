@@ -1,0 +1,410 @@
+{% extends "base.html" %}
+{% block title %}Dashboard Docente • Analítica Avanzada{% endblock %}
+
+{% block content %}
+<div x-data="{ isOpen: false, studentId: null, loading: false, htmlContent: '' }" class="min-h-screen bg-slate-950 text-slate-100 py-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    
+    <!-- Animated background orbs -->
+    <div class="absolute top-[-10%] left-[-10%] w-[35rem] h-[35rem] rounded-full filter blur-[120px] pointer-events-none" style="background: radial-gradient(circle, rgba(99,102,241,0.06), transparent 70%);"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[40rem] h-[40rem] rounded-full filter blur-[120px] pointer-events-none" style="background: radial-gradient(circle, rgba(6,182,212,0.05), transparent 70%);"></div>
+
+    <!-- Contenedor Principal -->
+    <div class="max-w-7xl mx-auto relative z-10">
+        
+        <!-- ==================== HEADER & CLASE ACTIVA ==================== -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8 border-b border-slate-900 pb-6">
+            <div>
+                <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                    Panel de Control & Analítica
+                </h1>
+                <p class="text-slate-400 text-sm mt-1">
+                    Supervisión adaptativa y detección temprana de rezago académico en tiempo real.
+                </p>
+            </div>
+            
+            <!-- LED Clase Activa -->
+            <div class="flex items-center gap-3 bg-slate-900/60 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-slate-800 shadow-lg">
+                <span class="relative flex h-3 w-3">
+                    {% if clase_activa %}
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                    {% else %}
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-slate-600"></span>
+                    {% endif %}
+                </span>
+                <span class="text-xs font-bold text-slate-300">
+                    {% if clase_activa %}
+                        Clase Activa en Vivo ({{ estudiantes_activos_5m }} ejerciendo)
+                    {% else %}
+                        Sin Actividad Reciente (Últimos 5m)
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <!-- ==================== CONTROLES DE FILTROS ==================== -->
+        <div class="bg-slate-900/40 backdrop-blur-md p-4 rounded-2xl border border-slate-900 shadow-xl mb-8 flex flex-wrap gap-4 items-center justify-between">
+            <form method="get" class="flex flex-wrap items-center gap-4 w-full sm:w-auto">
+                <!-- Filtro por Tema -->
+                <div class="flex flex-col">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Unidad / Tema</label>
+                    <select name="tema" onchange="this.form.submit()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-medium text-slate-300 outline-none focus:border-indigo-500 transition-colors">
+                        <option value="">📚 Todos los temas</option>
+                        {% for t in todos_temas %}
+                            <option value="{{ t.id }}" {% if tema_filtrado == t.id %}selected{% endif %}>{{ t.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Filtro por Fecha -->
+                <div class="flex flex-col">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Rango de Fecha</label>
+                    <select name="fecha" onchange="this.form.submit()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-medium text-slate-300 outline-none focus:border-indigo-500 transition-colors">
+                        <option value="todos" {% if rango_fechas == 'todos' %}selected{% endif %}>📅 Histórico Completo</option>
+                        <option value="hoy" {% if rango_fechas == 'hoy' %}selected{% endif %}>⚡ Hoy</option>
+                        <option value="semana" {% if rango_fechas == 'semana' %}selected{% endif %}>⏳ Últimos 7 días</option>
+                        <option value="mes" {% if rango_fechas == 'mes' %}selected{% endif %}>📅 Últimos 30 días</option>
+                    </select>
+                </div>
+            </form>
+            
+            {% if tema_filtrado or rango_fechas != 'todos' %}
+                <a href="{% url 'entrenador:dashboard' %}" class="text-xs font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 mt-4 sm:mt-0">
+                    ✕ Limpiar Filtros
+                </a>
+            {% endif %}
+        </div>
+
+        <!-- ==================== BENTO GRID PRINCIPAL ==================== -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            
+            <!-- ── SECCIÓN METRICAS (BENTO 1/3) ── -->
+            <div class="lg:col-span-1 flex flex-col gap-6">
+                <!-- Tarjetero de Agregación -->
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Estudiantes Activos -->
+                    <div class="bg-slate-900/40 backdrop-blur-md border border-slate-900/60 p-5 rounded-2xl shadow-xl flex flex-col justify-between min-h-[7.5rem]">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Estudiantes</span>
+                        <div class="mt-2 flex items-baseline gap-2">
+                            <span class="text-4xl font-extrabold text-white">{{ total_estudiantes }}</span>
+                            <span class="text-xs font-semibold text-slate-400">activos</span>
+                        </div>
+                    </div>
+                    <!-- Total Intentos -->
+                    <div class="bg-slate-900/40 backdrop-blur-md border border-slate-900/60 p-5 rounded-2xl shadow-xl flex flex-col justify-between min-h-[7.5rem]">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Intentos Totales</span>
+                        <div class="mt-2 flex items-baseline gap-2">
+                            <span class="text-4xl font-extrabold text-white">{{ total_intentos }}</span>
+                            <span class="text-xs font-semibold text-slate-400">ejercidos</span>
+                        </div>
+                    </div>
+                    <!-- % Aciertos -->
+                    <div class="bg-slate-900/40 backdrop-blur-md border border-slate-900/60 p-5 rounded-2xl shadow-xl flex flex-col justify-between min-h-[7.5rem]">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Tasa Acierto</span>
+                        <div class="mt-2 flex items-baseline gap-2">
+                            <span class="text-3xl font-extrabold text-emerald-400">{{ porcentaje_acierto }}%</span>
+                        </div>
+                    </div>
+                    <!-- Tiempo Promedio -->
+                    <div class="bg-slate-900/40 backdrop-blur-md border border-slate-900/60 p-5 rounded-2xl shadow-xl flex flex-col justify-between min-h-[7.5rem]">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Tiempo Prom.</span>
+                        <div class="mt-2 flex items-baseline gap-2">
+                            <span class="text-3xl font-extrabold text-cyan-400">{{ tiempo_promedio }}s</span>
+                            <span class="text-[10px] font-semibold text-slate-500">/ejerc.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bento: Alertas Tempranas (Early Warning System) -->
+                <div class="bg-slate-900/40 backdrop-blur-md border border-red-950/40 p-5 rounded-2xl shadow-xl flex flex-col flex-grow">
+                    <h3 class="text-sm font-extrabold uppercase tracking-wider text-red-400 mb-4 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        Alertas Tempranas (Riesgo Académico)
+                    </h3>
+                    <div class="flex flex-col gap-3 flex-grow overflow-y-auto max-h-[16rem]">
+                        {% for alerta in alertas %}
+                            <div @click="isOpen = true; loading = true; htmlContent = ''; fetch('estudiante/' + {{ alerta.id }} + '/').then(res => res.text()).then(html => { htmlContent = html; loading = false; setTimeout(() => { if(window.MathJax) MathJax.typesetPromise(); }, 50); })"
+                                 class="group bg-slate-950/60 hover:bg-slate-950 border border-slate-900 hover:border-red-900/40 p-3.5 rounded-xl cursor-pointer transition-all duration-300 flex items-center justify-between">
+                                <div class="min-w-0 pr-3">
+                                    <div class="font-bold text-sm text-slate-200 group-hover:text-red-400 transition-colors">{{ alerta.username }}</div>
+                                    <div class="text-[10px] text-slate-500 font-semibold mt-1">Razon: {{ alerta.razon }}</div>
+                                </div>
+                                <div class="text-right flex-shrink-0">
+                                    <div class="text-xs font-extrabold text-red-500 bg-red-950/20 border border-red-900/30 px-2 py-0.5 rounded-md">
+                                        {{ alerta.porcentaje_15 }}% acierto
+                                    </div>
+                                    <div class="text-[9px] text-slate-500 mt-1">Últimos 15 intentos</div>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="flex flex-col items-center justify-center py-8 text-center flex-grow">
+                                <span class="text-3xl">🛡️</span>
+                                <p class="text-slate-500 text-xs font-bold mt-2">Sin alertas críticas detectadas</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── SECCIÓN GRAFICOS & TABLA (BENTO 2/3) ── -->
+            <div class="lg:col-span-2 flex flex-col gap-6">
+                <!-- Stacked Bar Chart Principal -->
+                <div class="bg-slate-900/40 backdrop-blur-md border border-slate-900/60 p-6 rounded-3xl shadow-2xl">
+                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-900">
+                        <h2 class="text-lg font-bold text-slate-200">Desempeño Individual por Estudiante (Top 10)</h2>
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Aciertos vs Fallos</span>
+                    </div>
+                    <div class="relative h-[280px] w-full">
+                        <canvas id="graficaDesempeno"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ==================== SECCIÓN INFERIOR: MAS ANALISIS & TABLA ==================== -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <!-- Criptonita Académica (Radar) -->
+            <div class="bg-slate-900/40 backdrop-blur-md border border-slate-900/60 p-5 rounded-2xl shadow-xl md:col-span-1">
+                <div class="mb-4 pb-3 border-b border-slate-900">
+                    <h3 class="text-sm font-extrabold uppercase tracking-wider text-indigo-400">Tasa de Error por Tema</h3>
+                    <p class="text-[10px] text-slate-500 mt-0.5">Heatmap de vulnerabilidad académica grupal (%)</p>
+                </div>
+                <div class="relative h-[220px] w-full flex items-center justify-center">
+                    {% if heatmap_data %}
+                        <canvas id="graficaRadar"></canvas>
+                    {% else %}
+                        <p class="text-xs text-slate-500 text-center italic py-12">Aún no hay intentos con temas registrados.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Distribución Motor Adaptativo (Doughnut) -->
+            <div class="bg-slate-900/40 backdrop-blur-md border border-slate-900/60 p-5 rounded-2xl shadow-xl md:col-span-1">
+                <div class="mb-4 pb-3 border-b border-slate-900">
+                    <h3 class="text-sm font-extrabold uppercase tracking-wider text-purple-400">Distribución de Dificultad</h3>
+                    <p class="text-[10px] text-slate-500 mt-0.5">Alumnos por nivel del Motor Adaptativo</p>
+                </div>
+                <div class="relative h-[220px] w-full flex items-center justify-center">
+                    <canvas id="graficaDoughnut"></canvas>
+                </div>
+            </div>
+
+            <!-- Tabla rápida de Estudiantes Bento -->
+            <div class="bg-slate-900/40 backdrop-blur-md border border-slate-900/60 p-5 rounded-2xl shadow-xl md:col-span-1 flex flex-col">
+                <div class="mb-4 pb-3 border-b border-slate-900">
+                    <h3 class="text-sm font-extrabold uppercase tracking-wider text-cyan-400">Directorio de Rendimiento</h3>
+                    <p class="text-[10px] text-slate-500 mt-0.5">Haz clic para ver la ficha técnica completa</p>
+                </div>
+                <div class="flex flex-col gap-2 flex-grow overflow-y-auto max-h-[14rem]">
+                    {% for row in datos_estudiantes %}
+                        <div @click="isOpen = true; loading = true; htmlContent = ''; fetch('estudiante/' + {{ row.usuario }} + '/').then(res => res.text()).then(html => { htmlContent = html; loading = false; setTimeout(() => { if(window.MathJax) MathJax.typesetPromise(); }, 50); })"
+                             class="group hover:bg-slate-950/60 p-2.5 rounded-xl cursor-pointer transition-colors flex items-center justify-between border border-transparent hover:border-slate-800">
+                            <span class="font-bold text-xs text-slate-300 group-hover:text-cyan-400 transition-colors">{{ row.usuario__username }}</span>
+                            <span class="text-[10px] font-bold text-slate-500">
+                                {{ row.total }} intentos · <strong class="text-slate-400">{{ row.correctos }} aciertos</strong>
+                            </span>
+                        </div>
+                    {% empty %}
+                        <p class="text-xs text-slate-600 text-center italic py-12">No hay estudiantes activos en este rango.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ==================== DYNAMIC SLIDE-OVER (ALPINE.JS) ==================== -->
+    <div x-show="isOpen" 
+         class="fixed inset-0 z-50 overflow-hidden" 
+         aria-labelledby="slide-over-title" 
+         role="dialog" 
+         aria-modal="true"
+         style="display: none;">
+        
+        <!-- Backdrop blur overlay -->
+        <div x-show="isOpen" 
+             x-transition:enter="ease-in-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="ease-in-out duration-300"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="isOpen = false"
+             class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity"></div>
+
+        <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+            <div x-show="isOpen"
+                 x-transition:enter="transform transition ease-in-out duration-300 sm:duration-450"
+                 x-transition:enter-start="translate-x-full"
+                 x-transition:enter-end="translate-x-0"
+                 x-transition:leave="transform transition ease-in-out duration-300 sm:duration-450"
+                 x-transition:leave-start="translate-x-0"
+                 x-transition:leave-end="translate-x-full"
+                 class="pointer-events-auto w-screen max-w-md">
+                
+                <!-- Slide-over panel container -->
+                <div class="flex h-full flex-col bg-slate-900/95 backdrop-blur-xl border-l border-slate-800/80 shadow-2xl">
+                    
+                    <!-- Close header -->
+                    <div class="px-6 pt-6 pb-4 border-b border-slate-800 flex justify-between items-center flex-shrink-0">
+                        <h2 class="text-sm font-extrabold uppercase tracking-wider text-indigo-400">Detalles Académicos</h2>
+                        <button @click="isOpen = false" class="text-slate-400 hover:text-white rounded-lg p-1 bg-slate-950 border border-slate-800 focus:outline-none transition-colors">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    </div>
+
+                    <!-- Slide-over content area -->
+                    <div class="flex-1 overflow-y-auto">
+                        <div x-show="!loading" x-html="htmlContent"></div>
+                        
+                        <!-- Spinner de Carga -->
+                        <div class="flex flex-col items-center justify-center h-full py-12" x-show="loading">
+                            <svg class="animate-spin h-10 w-10 text-cyan-400" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest mt-4">Analizando historial...</span>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- scripts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const isDark = true; // Forzado a dark mode premium
+      const textColor = '#94a3b8';
+      const gridColor = '#1e293b';
+
+      // ── GRAFICO 1: BARRAS APILADAS DESEMPEÑO INDIVIDUAL ──
+      const ctxDesempeno = document.getElementById('graficaDesempeno').getContext('2d');
+      new Chart(ctxDesempeno, {
+        type: 'bar',
+        data: {
+          labels: {{ nombres|safe }},
+          datasets: [
+            {
+              label: 'Correctos',
+              data: {{ correctos_list|safe }},
+              backgroundColor: '#10b981',
+              borderRadius: 6,
+              borderWidth: 0,
+              hoverBackgroundColor: '#059669',
+              maxBarThickness: 32
+            },
+            {
+              label: 'Incorrectos',
+              data: {{ incorrectos_list|safe }},
+              backgroundColor: '#ef4444',
+              borderRadius: 6,
+              borderWidth: 0,
+              hoverBackgroundColor: '#dc2626',
+              maxBarThickness: 32
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: textColor, font: { family: "'Inter', sans-serif", weight: 'bold', size: 11 } } },
+            tooltip: {
+              backgroundColor: 'rgba(15, 23, 42, 0.95)',
+              titleColor: '#f8fafc',
+              bodyColor: '#cbd5e1',
+              borderColor: '#334155',
+              borderWidth: 1,
+              padding: 12
+            }
+          },
+          scales: {
+            x: { stacked: true, ticks: { color: textColor }, grid: { display: false } },
+            y: { stacked: true, ticks: { color: textColor, precision: 0 }, grid: { color: gridColor, drawBorder: false } }
+          }
+        }
+      });
+
+      // ── GRAFICO 2: RADAR ERROR HEATMAP (CRIPTÓNITA ACADÉMICA) ──
+      {% if heatmap_data %}
+      const ctxRadar = document.getElementById('graficaRadar').getContext('2d');
+      new Chart(ctxRadar, {
+        type: 'radar',
+        data: {
+          labels: {{ heatmap_labels|safe }},
+          datasets: [{
+            label: 'Tasa de Error (%)',
+            data: {{ heatmap_data|safe }},
+            backgroundColor: 'rgba(99, 102, 241, 0.25)',
+            borderColor: '#6366f1',
+            borderWidth: 2,
+            pointBackgroundColor: '#818cf8',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: '#6366f1'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            r: {
+              angleLines: { color: 'rgba(255,255,255,0.06)' },
+              grid: { color: 'rgba(255,255,255,0.06)' },
+              pointLabels: { color: textColor, font: { family: "'Inter', sans-serif", weight: 'bold', size: 10 } },
+              ticks: { display: false },
+              suggestedMin: 0,
+              suggestedMax: 100
+            }
+          }
+        }
+      });
+      {% endif %}
+
+      // ── GRAFICO 3: DOUGHNUT DISTRIBUCIÓN ADAPTATIVA ──
+      const ctxDoughnut = document.getElementById('graficaDoughnut').getContext('2d');
+      new Chart(ctxDoughnut, {
+        type: 'doughnut',
+        data: {
+          labels: ['Básico (1-3)', 'Medio (4-7)', 'Avanzado (8-10)'],
+          datasets: [{
+            data: {{ distribucion_motor|safe }},
+            backgroundColor: ['#f43f5e', '#a855f7', '#06b6d4'],
+            borderWidth: 0,
+            hoverOffset: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: textColor, font: { family: "'Inter', sans-serif", size: 10 }, boxWidth: 10, padding: 15 }
+            }
+          },
+          cutout: '65%'
+        }
+      });
+  });
+</script>
+
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+{% endblock %}

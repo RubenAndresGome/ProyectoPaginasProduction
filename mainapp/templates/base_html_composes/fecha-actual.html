@@ -1,0 +1,145 @@
+{% extends 'base_pura.html' %}
+
+{% block title %}Reloj Digital - {{ nombre }}{% endblock %}
+
+{% block content %}
+<!--
+  FONDO: Usamos slate-950 (casi negro azulado) para máximo contraste.
+  El gradiente es sutil para no distraer.
+-->
+<div class="flex flex-col items-center justify-center min-h-screen p-4 bg-slate-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black">
+
+    <!-- Saludo -->
+    <div class="text-center mb-8 animate-fade-in">
+        <h1 class="text-3xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 drop-shadow-sm">
+            Bienvenido, {{ nombre }}
+        </h1>
+        <p class="mt-2 text-slate-400 font-medium tracking-wide">Sistema de tiempo local activo</p>
+    </div>
+
+    <!-- TARJETA RELOJ DIGITAL -->
+    <!--
+      CORRECCIÓN DE VISIBILIDAD:
+      - bg-slate-900/90: Fondo oscuro pero sólido.
+      - border-cyan-900/50: Borde sutil azulada para definir límites.
+      - shadow-2xl + shadow-cyan-500/10: Sombra brillante para separar del fondo.
+    -->
+    <div class="w-full max-w-lg bg-slate-900/90 backdrop-blur-md rounded-2xl shadow-2xl shadow-cyan-900/20 overflow-hidden border border-slate-700 transform transition-all duration-500 hover:scale-[1.02] hover:border-cyan-700 hover:shadow-cyan-500/30">
+
+        <!-- Cabecera de la tarjeta -->
+        <div class="bg-slate-800/80 px-6 py-4 border-b border-slate-700 flex justify-between items-center">
+            <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-2">
+                <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span>
+                En Vivo
+            </span>
+            <span class="text-slate-400 text-xs font-mono bg-slate-950/50 px-2 py-1 rounded border border-slate-700">SYS.TIME.02</span>
+        </div>
+
+        <!-- Cuerpo del reloj -->
+        <div class="p-8 text-center">
+
+            <!-- Fecha Grande -->
+            <div class="mb-8">
+                <p class="text-slate-400 text-xs font-bold uppercase tracking-[0.2em] mb-3">Fecha Actual</p>
+
+                <!-- Contenedor de fecha con borde sutil para destacar -->
+                <div id="reloj-fecha" class="text-4xl md:text-6xl font-mono font-bold text-white tracking-tight drop-shadow-md transition-colors duration-300">
+                    {% now "d/m/Y" %}
+                </div>
+
+                <p id="reloj-fecha-larga" class="mt-3 text-lg md:text-xl text-cyan-100 font-medium drop-shadow-sm">
+                    {% now "l, d \d\e F \d\e Y" %}
+                </p>
+            </div>
+
+            <!-- Separador Brillante -->
+            <div class="h-px w-2/3 mx-auto bg-gradient-to-r from-transparent via-cyan-500 to-transparent my-8 shadow-[0_0_10px_rgba(6,182,212,0.5)]"></div>
+
+            <!-- Hora Exacta -->
+            <div class="relative">
+                <p class="text-slate-400 text-xs font-bold uppercase tracking-[0.2em] mb-3">Hora Exacta</p>
+
+                <!--
+                  CORRECCIÓN DE COLOR:
+                  Usamos text-cyan-400 con un brillo verde/azul fuerte.
+                  El text-shadow es clave para el efecto "neón".
+                -->
+                <div id="reloj-hora" class="text-5xl md:text-7xl font-mono font-bold text-cyan-400 tracking-wider drop-shadow-[0_0_15px_rgba(34,211,238,0.6)] transition-all duration-300">
+                    {% now "H:i:s" %}
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Pie de tarjeta -->
+        <div class="bg-slate-800/80 px-6 py-4 border-t border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-3">
+            <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                <p class="text-xs text-slate-400 font-mono">Servidor Django &bull; UTC{{ now|date:"Z" }}</p>
+            </div>
+
+            <!-- Botón de acción con alto contraste -->
+            <button id="toggle-formato" class="group flex items-center gap-2 text-xs font-bold text-cyan-400 bg-cyan-950/30 hover:bg-cyan-900/50 border border-cyan-800 hover:border-cyan-500 px-3 py-1.5 rounded transition-all duration-300">
+                <svg class="w-3 h-3 group-hover:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                <span id="btn-text">Formato 24h</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Botón de volver -->
+    <a href="/mainapp/static" class="mt-8 text-sm text-slate-500 hover:text-cyan-400 underline decoration-slate-700 hover:decoration-cyan-400 underline-offset-4 transition-all">
+        &larr; Volver al inicio
+    </a>
+
+</div>
+
+<!-- JavaScript Funcional -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const relojHora = document.getElementById('reloj-hora');
+    const relojFecha = document.getElementById('reloj-fecha');
+    const relojFechaLarga = document.getElementById('reloj-fecha-larga');
+    const toggleBoton = document.getElementById('toggle-formato');
+    const btnText = document.getElementById('btn-text');
+
+    let formato24h = true;
+
+    const actualizarReloj = () => {
+        const ahora = new Date();
+
+        const opcionesHora = {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: !formato24h
+        };
+
+        // Formato de fecha consistente
+        const opcionesFecha = { day: '2-digit', month: '2-digit', year: 'numeric' };
+        const opcionesFechaLarga = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+
+        // Actualizar DOM
+        relojHora.textContent = ahora.toLocaleTimeString('es-ES', opcionesHora);
+        relojFecha.textContent = ahora.toLocaleDateString('es-ES', opcionesFecha).replace(/\//g, ' / ');
+
+        // Capitalizar primera letra de la fecha larga
+        let fechaLarga = ahora.toLocaleDateString('es-ES', opcionesFechaLarga);
+        relojFechaLarga.textContent = fechaLarga.charAt(0).toUpperCase() + fechaLarga.slice(1);
+    };
+
+    toggleBoton.addEventListener('click', () => {
+        formato24h = !formato24h;
+        btnText.textContent = formato24h ? 'Formato 24h' : 'Formato 12h';
+
+        // Efecto visual al cambiar
+        relojHora.classList.add('scale-110', 'text-white');
+        setTimeout(() => relojHora.classList.remove('scale-110', 'text-white'), 200);
+
+        actualizarReloj();
+    });
+
+    setInterval(actualizarReloj, 1000);
+    actualizarReloj(); // Ejecución inmediata
+});
+</script>
+{% endblock %}

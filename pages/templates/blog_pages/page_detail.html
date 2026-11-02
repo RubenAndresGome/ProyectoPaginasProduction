@@ -1,0 +1,14 @@
+{% extends 'theme/templates/base_pura.html' %}
+
+{% block title %}{{ page.titulo }}{% endblock %}
+<br>
+{% block content %}
+<article>
+    <h1>{{ page.titulo }}</h1>
+    <br>
+    <div>{{ page.content|linebreaks }}</div>
+    <br>
+    <p><small>Creado: {{ page.create_at|date:"d/m/Y" }}</small></p>
+    <br>
+</article>
+{% endblock %}

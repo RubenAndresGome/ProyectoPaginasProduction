@@ -1,0 +1,118 @@
+{% extends 'base_pura.html' %}
+{% load filters %}
+{% block title %}Test{% endblock %}
+
+{% block content %}
+{% comment %}
+Template parcial reutilizable para mostrar artículos
+Variables esperadas:
+- article: Objeto Article
+- show_actions: Boolean para mostrar botones de acción (default: False)
+{% endcomment %}
+
+<div class="bg-slate-800/80 backdrop-blur-sm rounded-xl border border-slate-700 shadow-lg hover:shadow-cyan-500/20 transition-all duration-300 hover:border-cyan-700 overflow-hidden">
+    <!-- Cabecera de la card -->
+    <div class="bg-slate-900/50 px-6 py-4 border-b border-slate-700 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-white">{{ article.title }}</h3>
+                <p class="text-xs text-slate-400 font-mono">ID: #{{ article.id }}</p>
+            </div>
+        </div>
+
+        <!-- Estado (Publicado/Borrador) -->
+        <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider {% if article.publico %}bg-emerald-500/20 text-emerald-400 border border-emerald-500/50{% else %}bg-amber-500/20 text-amber-400 border border-amber-500/50{% endif %}">
+            {% if article.publico %}
+                <span class="w-2 h-2 bg-emerald-500 rounded-full inline-block mr-1 animate-pulse"></span>
+                Publicado
+            {% else %}
+                <span class="w-2 h-2 bg-amber-500 rounded-full inline-block mr-1"></span>
+                Borrador
+            {% endif %}
+        </span>
+    </div>
+
+    <!-- Cuerpo de la card (Contenido) -->
+    <div class="px-6 py-4">
+        <div class="prose prose-invert max-w-none">
+            <p class="text-slate-300 leading-relaxed">
+                {{ article.content|truncatewords:30 }}
+            </p>
+        </div>
+    </div>
+
+           <!-- Sección de imagen del artículo -->
+            <div class="mb-6 rounded-xl overflow-hidden shadow-md">
+                {% if article.image %}
+                    <img src="{{ article.image.url }}" alt="{{ article.title }}">
+                {% else %}
+                    <div class="bg-gray-800 ...">
+                        <p>Este artículo no tiene imagen asociada</p>
+                    </div>
+            {% endif %}
+            </div>
+
+    <!-- Pie de la card (Metadatos y Acciones) -->
+    <div class="bg-slate-900/30 px-6 py-4 border-t border-slate-700">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <!-- Metadatos -->
+            <div class="flex flex-wrap gap-4 text-xs text-slate-400 font-mono">
+                <div class="flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <span>Creado: {{ article.created_date_at|date:"d/m/Y" }}</span>
+                </div>
+                {% if article.updated_date_at %}
+                <div class="flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    <span>Actualizado: {{ article.updated_date_at|date:"d/m/Y" }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Botones de Acción -->
+            {% if show_actions %}
+<div class="flex gap-2">
+    <a href="{% url 'mainapp:articulo_get' article.id %}" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-bold rounded-lg transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/30 flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+        </svg>
+        Ver
+    </a>
+    <a href="{% url 'mainapp:articulo_editar' article.id %}" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white text-sm font-bold rounded-lg transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/30 flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+        </svg>
+        Editar
+    </a>
+    <!-- ✅ BOTÓN DE BORRAR CON CONFIRMACIÓN JS -->
+    <a href="{% url 'mainapp:borrar_articulo' article.id %}"
+   data-title="{{ article.title }}"
+   onclick="return confirmarEliminacion(this)"
+   class="px-4 py-2 bg-red-600 ...">
+    Borrar
+</a>
+<script>
+function confirmarEliminacion(elemento) {
+    const titulo = elemento.getAttribute('data-title');
+    return confirm(`⚠️ ¿Estás seguro de eliminar el artículo "${titulo}"?\n\nEsta acción no se puede deshacer.`);
+}
+</script>
+
+</div>
+
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

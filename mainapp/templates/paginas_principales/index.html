@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Inicio{% endblock %}
+
+{% block content %}
+<!-- Encabezado -->
+<div class="mb-8">
+    <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 mb-2">
+        Inicio
+    </h1>
+    <p class="text-slate-500 dark:text-slate-400">Bienvenido a tu sitio Django + Tailwind</p>
+</div>
+
+{% comment %}
+<!-- Sección de Años -->
+<div class="bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-6 mb-8">
+    <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-4">Años hasta el 2050</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2 max-h-96 overflow-y-auto p-2">
+        {% for year_item in years %}
+            <span class="px-3 py-2 rounded-lg text-sm {% if year_item.is_even %}bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 font-semibold{% else %}bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400{% endif %}">
+                {{ year_item.year }}
+            </span>
+        {% endfor %}
+    </div>
+</div>
+<!-- Sección de Lenguajes -->
+<div class="bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-6 mb-8">
+    <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-4">
+        Lenguajes de {{ nombre }}
+    </h2>
+    <ul class="space-y-2">
+        {% for lenguaje_item in lenguajes %}
+            <li class="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
+                <span class="w-2 h-2 bg-cyan-500 rounded-full"></span>
+                <span class="text-slate-700 dark:text-slate-300">{{ lenguaje_item }}</span>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+
+{% endcomment %}
+  {% if messages %}
+      <div class="bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-6 mb-8">
+    <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-4">Mensajes</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2 max-h-96 overflow-y-auto p-2">
+        {% for message in messages %}
+            <div class="animate-pulse alert-sucess">
+            {{ message }}
+            </div>
+        {% endfor %}
+
+    </div>
+</div>
+
+  {% endif  %}
+
+ {% if  user.email  %}
+     <div class="bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-6 mb-8">
+            <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-4">HOLA BIENVENIDO</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2 max-h-96 overflow-y-auto p-2">
+               <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-4">
+                   {{ request.user.username }}
+               </h2>
+
+    </div>
+</div>
+     {% else %}
+     <div class="bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-6 mb-8">
+            <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-4">Inicia Sesion para acceder a mas contenido</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2 max-h-96 overflow-y-auto p-2">
+    </div>
+    </div>
+  {% endif  %}
+
+
+<!-- Fecha Actual -->
+<div class="bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-6">
+    {% include 'base_html_composes/fecha-actual.html' %}
+</div>
+{% endblock %}

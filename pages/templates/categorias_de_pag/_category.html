@@ -1,0 +1,16 @@
+{% extends 'theme/templates/base_pura.html' %}
+
+{% block title %}{{ categoria.name }}{% endblock %}
+
+{% block content %}
+<article>
+    <h1>{{ category.name }}</h1>
+    <br>
+    <br>
+    <div>{{ categoria.description|linebreaks }}</div>
+    <br>
+    <p><small>Creado: {{ categoria.create_at|date:"d/m/Y" }}</small></p>
+    <br>
+    {% include 'blog_articulos_pag/list.html' with articulos=articulos_de_categoria %}
+</article>
+{% endblock %}

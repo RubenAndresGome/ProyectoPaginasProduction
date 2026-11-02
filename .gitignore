@@ -1,0 +1,170 @@
+# -----------------------------------------------------------------------------
+# SISTEMA OPERATIVO
+# -----------------------------------------------------------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.fuse_hidden*
+
+# -----------------------------------------------------------------------------
+# EDITORES DE CÓDIGO / IDE
+# -----------------------------------------------------------------------------
+# VS Code
+.vscode/
+*.code-workspace
+
+# PyCharm / IntelliJ
+.idea/
+*.iml
+
+# Vim / Emacs
+*.swp
+*.swo
+*~
+*.un~
+
+# -----------------------------------------------------------------------------
+# PYTHON
+# -----------------------------------------------------------------------------
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Pyenv
+.python-version
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.mypy_cache/
+
+# -----------------------------------------------------------------------------
+# ENTORNOS VIRTUALES
+# -----------------------------------------------------------------------------
+# Estándares
+venv/
+ENV/
+env/
+.venv/
+
+# Específico de tu proyecto
+entorno_django/
+
+# -----------------------------------------------------------------------------
+# DJANGO
+# -----------------------------------------------------------------------------
+# Base de datos SQLite
+*.sqlite3
+*-journal
+
+# Logs
+*.log
+
+# Configuración local sensible
+local_settings.py
+local_settings.py.example
+
+# Archivos estáticos y media (Cuidado: si tienes CSS/JS fuente en 'static/', no lo ignores)
+staticfiles/
+media/
+# static/  <-- Descomenta solo si todo tu contenido estático es generado o temporal
+
+# -----------------------------------------------------------------------------
+# SEGURIDAD Y SECRETOS
+# -----------------------------------------------------------------------------
+# Variables de entorno
+.env
+.env.*
+!.env.example
+
+# Certificados y Llaves
+*.key
+*.pem
+*.crt
+*.secret
+*.p12
+*.pfx
+
+# Credenciales
+credentials/
+secrets/
+passwords/
+*.password
+
+# -----------------------------------------------------------------------------
+# DATOS Y ARCHIVOS TEMPORALES (Específico de tu proyecto)
+# -----------------------------------------------------------------------------
+*.csv
+*.xlsx
+*.xls
+*.pbix
+*.zip
+*.rar
+*.pdf
+*.dump
+*.sql  <-- Opcional: ignora dumps de DB si contienen datos sensibles
+
+# -----------------------------------------------------------------------------
+# OTROS
+# -----------------------------------------------------------------------------
+# Node (si usas frontend integrado)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Docker (opcional)
+docker-compose.override.yml
+# Windows: venv antiguo
+env_win/
+
+# --- Publicación (portafolio): no subir credenciales, binarios ni documentos internos
+SuperUser.txt
+User.txt
+tailwindcss
+.._
+Informe_Residencia_Completo.*
+ContentReportForWord.txt
+planUsedForMoreEntrenators(USED).txt
+Sprint*_Code_Notes.txt
+github_copilot.md
+new.py
+test_render*.py
+
+# El CSS compilado SI se sube (el servidor no corre Tailwind)
+!static/css/dist/
+!static/css/dist/styles.css

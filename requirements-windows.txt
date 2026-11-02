@@ -1,0 +1,44 @@
+# Django Web Framework
+Django==6.0.3
+
+# Database
+mysqlclient==2.2.8
+
+# Media handling (optional, for image uploads)
+Pillow==10.1.0
+
+# Rich Text Editor
+django-ckeditor==6.7.3
+django-js-asset==3.1.2
+
+# Environment variables management
+django-environ==0.13.0
+whitenoise==6.9.0
+
+# Utilities & Extensions
+django-extensions==4.1
+
+# Frontend CSS framework (optional)
+django-tailwind==4.4.2
+
+# Development & Debugging (development only)
+django-debug-toolbar==6.2.0
+
+# Optional: API & Serialization
+djangorestframework==3.14.0
+
+# Optional: Async support
+celery==5.3.4
+redis==5.0.1
+
+# Optional: Monitoring & Errors
+sentry-sdk==1.38.0
+
+# Production server: gunicorn/uWSGI excluidos (no soportados en Windows; usar waitress si se requiere)
+
+# Code quality (development only)
+black==23.12.1
+flake8==6.1.0
+isort==5.13.2
+pylint==3.0.3
+

@@ -1,0 +1,51 @@
+{% extends '_bases/base_blog.html' %}
+{% load static %}
+
+{% block title %}{{ articulo.title }}{% endblock %} {# CORREGIDO: de publicacion.title a articulo.title #}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-10">
+    
+    <!-- Botón de Volver -->
+    <a href="{% url 'blog:blog_publicaciones' %}" class="inline-flex items-center text-slate-500 hover:text-purple-500 transition-colors mb-8 font-medium">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        Volver a Publicaciones
+    </a>
+
+    <!-- Encabezado del Post -->
+    <header class="mb-10 text-center">
+        <div class="mb-4">
+            {% for cat in articulo.categoria.all %} {# CORREGIDO: de publicacion.categoria a articulo.categoria #}
+                <span class="inline-block bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide mr-2">
+                    {{ cat.name }}
+                </span>
+            {% endfor %}
+        </div>
+        <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white mb-4 leading-tight">
+            {{ articulo.title }} {# CORREGIDO: de publicacion.title a articulo.title #}
+        </h1>
+        <p class="text-slate-500 dark:text-slate-400 font-mono text-sm">
+            Publicado el {{ articulo.created_at|date:"d de F, Y" }} por {{ articulo.user.username }} {# CORREGIDO: de publicacion.created_at a articulo.created_at #}
+        </p>
+    </header>
+
+    <!-- Imagen Principal (Si tiene) -->
+    {% if articulo.imagen %} {# CORREGIDO: de publicacion.imagen a articulo.imagen #}
+    <div class="w-full h-64 md:h-96 mb-10 rounded-2xl overflow-hidden shadow-lg border border-slate-200 dark:border-slate-800">
+        <img src="{{ articulo.imagen.url }}" alt="{{ articulo.title }}" class="w-full h-full object-cover"> {# CORREGIDO: de publicacion.imagen.url a articulo.imagen.url #}
+    </div>
+    {% endif %}
+
+    <!-- Contenido Rico (CKEditor) -->
+    <div class="post-content bg-white dark:bg-slate-900 p-6 md:p-10 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200">
+        {{ articulo.content|safe }} {# CORREGIDO: de publicacion.content a articulo.content #}
+    </div>
+
+</div>
+
+<!-- Configuración de MathJax -->
+<script>
+    MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }, svg: { fontCache: 'global' } };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+{% endblock %}

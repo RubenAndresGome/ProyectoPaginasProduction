@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Mi Sitio{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/estilosPersonalizados.css' %}">
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 transition-colors duration-300 min-h-screen flex flex-col">
+
+    {% include 'base_menu.html' %}
+
+    <main class="flex-grow container mx-auto px-4 py-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-slate-200 dark:bg-slate-900 border-t border-slate-300 dark:border-slate-700 py-4 mt-8">
+        <div class="container mx-auto px-4 text-center text-sm text-slate-500 dark:text-slate-400">
+            © 2026 Django Site. Ruben GM.
+        </div>
+    </footer>
+<!-- Agrega esto justo antes de </body> en theme/templates/base.html -->
+
+{% if messages %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        {% for message in messages %}
+            // Mostrar alert según el tipo de mensaje
+            {% if message.tags == 'success' %}
+                alert("✅ {{ message|escapejs }}");
+            {% elif message.tags == 'error' %}
+                alert("❌ {{ message|escapejs }}");
+            {% else %}
+                alert("{{ message|escapejs }}");
+            {% endif %}
+        {% endfor %}
+    });
+</script>
+{% endif %}
+
+</body>
+</html>

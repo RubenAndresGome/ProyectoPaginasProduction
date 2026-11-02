@@ -1,0 +1,26 @@
+{% extends 'theme/templates/base_pura.html' %}
+
+{% block title%} {{ titulo }} {% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-600 mb-4">
+        {{ title }}
+    </h1>
+    <p class="text-slate-500 dark:text-slate-400 mb-8">Esta es una vista simple que muestra todos los artículos sin paginación ni filtros.</p>
+
+    {% if articulos %}
+        <div class="space-y-4">
+        {% for articulo in articulos %}
+            <div class="p-4 bg-slate-800 rounded-lg border border-slate-700">
+                <h2 class="text-xl font-bold text-white">{{ articulo.title }}</h2>
+                <p class="text-sm text-slate-400">Publicado: {{ articulo.created_at|date:"d M, Y" }}</p>
+            </div>
+        {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-slate-400">No hay artículos para mostrar en esta vista.</p>
+    {% endif %}
+</div>
+
+{% endblock %}
