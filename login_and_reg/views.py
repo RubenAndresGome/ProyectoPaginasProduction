@@ -4,6 +4,24 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
+from django.core.cache import cache
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_POST
+
+
+def _clave_intentos(request, usuario):
+    ip = request.META.get('REMOTE_ADDR', '')
+    return f'login-fallos:{ip}:{(usuario or "").lower()[:150]}'
+
+
+def _destino_seguro(request):
+    """Respeta ?next= solo si apunta a este mismo sitio (evita redirecciones abiertas)."""
+    destino = request.POST.get('next') or request.GET.get('next')
+    if destino and url_has_allowed_host_and_scheme(destino, allowed_hosts={request.get_host()},
+                                                   require_https=request.is_secure()):
+        return destino
+    return 'mainapp:inicio'
 
 def register_page(request):
     if request.method == 'POST':
@@ -32,17 +50,21 @@ def login_page(request):
     if request.user.is_authenticated:
         return redirect('mainapp:inicio')
     if request.method == 'POST':
-        login_form = AuthenticationForm(request, data=request.POST)
-        if login_form.is_valid():
-            username = login_form.cleaned_data.get('username')
-            password = login_form.cleaned_data.get('password')
-            user = authenticate(username=username, password=password)
-            if user is not None:
+        clave = _clave_intentos(request, request.POST.get('username'))
+        if cache.get(clave, 0) >= settings.LOGIN_MAX_INTENTOS:
+            minutos = settings.LOGIN_BLOQUEO_SEGUNDOS // 60
+            messages.error(request, f'Demasiados intentos fallidos. Espera {minutos} minutos e inténtalo de nuevo.')
+            login_form = AuthenticationForm(request)
+        else:
+            login_form = AuthenticationForm(request, data=request.POST)
+            if login_form.is_valid():
+                user = login_form.get_user()
                 login(request, user)
-                messages.success(request, f'Bienvenido de nuevo, {username}!')
-                return redirect('mainapp:inicio')
-            else:
-                messages.error(request, 'Usuario o contraseña incorrectos.')
+                cache.delete(clave)
+                messages.success(request, f'Bienvenido de nuevo, {user.get_username()}.')
+                return redirect(_destino_seguro(request))
+            cache.set(clave, cache.get(clave, 0) + 1, settings.LOGIN_BLOQUEO_SEGUNDOS)
+            messages.error(request, 'Usuario o contraseña incorrectos.')
     else:
         login_form = AuthenticationForm()
 
@@ -57,7 +79,9 @@ def login_page(request):
         'title': 'Iniciar Sesión',
         'login_form': login_form
     })
-@login_required()
+@require_POST
 def logout_user(request):
-        logout(request)
-        return redirect('mainapp:inicio')
+    """Solo por POST + CSRF: un enlace externo no puede cerrar tu sesión."""
+    logout(request)
+    messages.success(request, 'Sesión cerrada.')
+    return redirect('mainapp:inicio')

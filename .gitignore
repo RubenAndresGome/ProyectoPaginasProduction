@@ -168,3 +168,9 @@ test_render*.py
 # El CSS compilado SI se sube (el servidor no corre Tailwind)
 !static/css/dist/
 !static/css/dist/styles.css
+
+# Archivos apartados para borrar
+_to_delete/
+
+# Herramientas descargadas (se regeneran con adminExe/descargar_tools.py)
+adminExe/dist/

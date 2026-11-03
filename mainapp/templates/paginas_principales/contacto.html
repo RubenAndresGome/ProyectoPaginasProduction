@@ -1,69 +1,47 @@
 {% extends 'base.html' %}
-
-{% block title %}{{ title }}{% endblock %}
-
+{% block title %}Contacto{% endblock %}
 {% block content %}
-<div class="max-w-2xl mx-auto">
-    <!-- Card de Contacto -->
-    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+<div class="max-w-5xl mx-auto">
+  <header class="mb-8">
+    <h1 class="text-4xl font-extrabold text-slate-900 dark:text-white">Contacto</h1>
+    <p class="mt-2 text-slate-500 dark:text-slate-400">¿Dudas, sugerencias o una oportunidad laboral? Escríbeme.</p>
+  </header>
 
-        <!-- Encabezado -->
-        <div class="bg-gradient-to-r from-emerald-500 to-teal-600 px-8 py-6">
-            <h1 class="text-3xl font-extrabold text-white">
-                📧 {{ title }}
-            </h1>
-            <p class="text-emerald-100 mt-2">Escríbeme por WhatsApp o revisa mis proyectos en GitHub</p>
-        </div>
+  <div class="grid gap-6 lg:grid-cols-5">
+    <form method="post" action="{% url 'mensajes:enviar' %}" class="tarjeta p-6 space-y-4 lg:col-span-3" novalidate>
+      {% csrf_token %}
+      <div class="grid gap-4 sm:grid-cols-2">
+        {% for campo in form %}{% if campo.name == 'nombre' or campo.name == 'email' %}
+        <div><label class="etiqueta" for="{{ campo.id_for_label }}">{{ campo.label }}</label>{{ campo }}{% for e in campo.errors %}<p class="mt-1 text-xs text-red-600">{{ e }}</p>{% endfor %}</div>
+        {% endif %}{% endfor %}
+      </div>
+      <div><label class="etiqueta" for="{{ form.asunto.id_for_label }}">{{ form.asunto.label }}</label>{{ form.asunto }}{% for e in form.asunto.errors %}<p class="mt-1 text-xs text-red-600">{{ e }}</p>{% endfor %}</div>
+      <div><label class="etiqueta" for="{{ form.cuerpo.id_for_label }}">{{ form.cuerpo.label }}</label>{{ form.cuerpo }}{% for e in form.cuerpo.errors %}<p class="mt-1 text-xs text-red-600">{{ e }}</p>{% endfor %}</div>
+      <div class="absolute -left-[9999px]" aria-hidden="true"><label>No llenar {{ form.sitio_web }}</label></div>
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <p class="text-xs text-slate-500">{% if user.is_authenticated %}Verás la respuesta en <a class="text-indigo-600" href="{% url 'mensajes:mis_mensajes' %}">Mis mensajes</a>.{% else %}Te responderé a tu correo.{% endif %}</p>
+        <button type="submit" class="btn-primario"><i class="fas fa-paper-plane"></i> Enviar mensaje</button>
+      </div>
+    </form>
 
-        <!-- Contenido -->
-        <div class="px-8 py-6">
-            <div class="space-y-4">
-                <div class="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-                    <div class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center">
-                        <svg class="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-sm text-slate-500 dark:text-slate-400">Acerca de · GitHub</p>
-                        <a href="https://github.com/RubenAndresGome" target="_blank" rel="noopener" class="text-slate-800 dark:text-slate-200 font-medium hover:text-emerald-500 underline">RubenAndresGome — Rubén Andrés Gómez Molina</a>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-                    <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-                        <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-sm text-slate-500 dark:text-slate-400">Teléfono</p>
-                        <a href="tel:+524661074921" class="text-slate-800 dark:text-slate-200 font-medium hover:text-blue-500 underline">+52 466 107 4921</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Botón de Acción -->
-            <div class="mt-6">
-                <a href="https://wa.me/524661074921?text=Hola%20Rub%C3%A9n%2C%20vi%20tu%20sitio%20web" target="_blank" rel="noopener" class="w-full block text-center px-6 py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition-all duration-300 shadow-lg hover:shadow-emerald-500/30">
-                    💬 Enviar mensaje por WhatsApp
-                </a>
-            </div>
-        </div>
-
-        <!-- Pie -->
-        <div class="px-8 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700">
-            <p class="text-sm text-slate-500 dark:text-slate-400 text-center">
-                Desarrollado por Rubén Andrés Gómez Molina · ITESS
-            </p>
-        </div>
-    </div>
-
-    <!-- Botón Volver -->
-    <div class="mt-6 text-center">
-        <a href="{% url 'mainapp:inicio' %}" class="text-slate-500 dark:text-slate-400 hover:text-cyan-500 dark:hover:text-cyan-400 underline transition-colors">
-            ← Volver al inicio
-        </a>
-    </div>
+    <aside class="lg:col-span-2 space-y-4">
+      {% if sitio.whatsapp %}
+      <a href="{{ sitio.whatsapp_url }}?text=Hola%20Rub%C3%A9n%2C%20vi%20tu%20sitio%20web" target="_blank" rel="noopener" class="tarjeta p-5 flex items-center gap-4 hover:border-emerald-400 transition-colors">
+        <span class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 text-2xl flex items-center justify-center"><i class="fab fa-whatsapp"></i></span>
+        <span><span class="block font-bold text-slate-900 dark:text-white">WhatsApp</span><span class="text-sm text-slate-500">{{ sitio.telefono_legible }}</span></span>
+      </a>
+      {% endif %}
+      {% for red in redes_sociales %}{% if 'github' in red.icono or 'linkedin' in red.icono %}
+      <a href="{{ red.url }}" target="_blank" rel="noopener" class="tarjeta p-5 flex items-center gap-4 hover:border-indigo-400 transition-colors">
+        <span class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-2xl flex items-center justify-center"><i class="{{ red.icono }}"></i></span>
+        <span><span class="block font-bold text-slate-900 dark:text-white">{{ red.nombre }}</span><span class="text-sm text-slate-500 break-all">{{ red.url|cut:"https://" }}</span></span>
+      </a>
+      {% endif %}{% endfor %}
+      <div class="tarjeta p-5">
+        <h2 class="font-bold text-slate-900 dark:text-white">Acerca de</h2>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{{ sitio.autor }} — desarrollador junior y residente profesional del ITESS. Este sitio es mi proyecto de residencia: Django, Tailwind y un entrenador matemático adaptativo.</p>
+      </div>
+    </aside>
+  </div>
 </div>
 {% endblock %}

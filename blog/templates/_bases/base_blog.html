@@ -1,21 +1,2 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="es" class="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Blog{% endblock %} - Mi Sitio</title>
-    <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}">
-    <link rel="stylesheet" href="{% static 'css/estilosPersonalizados.css' %}">
-</head>
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 transition-colors duration-300 min-h-screen">
-
-    {% include '_bases/_nav_blog.html' %}
-
-    <main>
-        {% block content %}{% endblock %}
-    </main>
-
-<script src="{% static 'js/easter_egg.js' %}" defer></script>
-</body>
-</html>
+{% extends 'base.html' %}
+{# El blog usa la base única del sitio (theme/templates/base.html) #}

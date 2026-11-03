@@ -20,7 +20,7 @@ class BloqueInline(admin.StackedInline):
 
 @admin.register(Articulo_Page)
 class ArticuloPageAdmin(admin.ModelAdmin):
-    list_display = ('title', 'plantilla', 'num_bloques', 'user', 'publicado', 'created_at')
+    list_display = ('title', 'plantilla', 'num_bloques', 'user', 'publicado', 'veces_compartido', 'created_at')
     list_filter = ('publicado', 'plantilla', 'categoria')
     search_fields = ('title', 'content')
     filter_horizontal = ('categoria',)

@@ -59,15 +59,19 @@ Activar venv: `.\.venv\Scripts\Activate.ps1` (PowerShell) / `.venv\Scripts\activ
 ## 4. Arquitectura (resumen)
 
 - `ProyectoPaginas/` — settings, urls raíz, wsgi/asgi.
-- `mainapp` — páginas estáticas + CRUD `Article`; templatetags en `mainapp/templatetags/filters.py`.
-- `pages` — CMS de páginas dinámicas; context processor `get_pages`.
-- `blog` — `Articulo_Page` + `Categoria` (slug); context processor `get_categorias`.
-- `login_and_reg` — autenticación/registro.
-- `entrenador` — generadores de ejercicios matemáticos (`entrenador/generators/*.py`, salida LaTeX `\[ ... \]`; las `\\` son escapes LaTeX, **no** separadores de ruta: no "corregirlas").
-- `theme` — plantillas base (`TEMPLATES.DIRS = BASE_DIR/'theme'/'templates'`).
-- Estáticos: entrada Tailwind `static/src/styles.css` → salida `static/css/dist/styles.css`
-  (la que cargan las plantillas). Config: `tailwind.config.js` (v3, `darkMode: 'class'`).
-- Editor enriquecido: `django-ckeditor`. Debug toolbar activa solo con `DEBUG=True`.
+- `theme` — **base única**: `base.html` (menú + footer + toasts + tutor) y `base_pura.html` (sin menú, para login).
+  `_head.html` compartido. Componentes CSS (`btn-primario`, `tarjeta`, `campo`, `nav-link`…) en `static/src/styles.css`
+  (`@layer components`). Nunca crear otra base: extender una de estas dos.
+- `mainapp` — portada (`index`), contacto (con formulario de `mensajes`) y CRUD clásico `Article` (solo staff, borrar por POST).
+- `blog` — artículos por bloques, plantillas, editor visual (`editor_views.py`, staff), likes, vistas, compartir,
+  métricas y exportación a Markdown (`markdown.py`). Lectura pública; borradores solo staff.
+- `entrenador` — generadores (`generators/*.py`, salida LaTeX `\[ ... \]`; las `\\` son LaTeX, **no** rutas) y motor adaptativo.
+- `perfil` — `Perfil` (señal post_save), `ConfiguracionSitio` (registro único pk=1) y `RedSocial`; context processor
+  `sitio` → `{{ sitio }}` y `{{ redes_sociales }}` en todas las plantillas. Edición del sitio: solo staff en `/perfil/`.
+- `mensajes` — `Mensaje` (contacto, honeypot `sitio_web`, 3/hora por sesión), bandeja staff, `bot.py` (tutor por reglas).
+- `pages` — CMS de páginas dinámicas (sin cambios); `pages/templates/layauts/` son plantillas HTML descargadas.
+- `login_and_reg` — namespace **`log_and_reg`** (definido en `include()`), no `login_and_reg`.
+- Estáticos: `static/src/styles.css` → `static/css/dist/styles.css` (se versiona; el servidor no compila Tailwind).
 
 ### Motor de artículos por bloques (`blog`)
 - `Plantilla.estructura` (JSON) = lista de `{"tipo", "datos"}`; al crear un `Articulo_Page` con plantilla,
@@ -85,6 +89,22 @@ Activar venv: `.\.venv\Scripts\Activate.ps1` (PowerShell) / `.venv\Scripts\activ
   `mysqlclient` trae wheel para Windows/Py3.12; si falla, usar SQLite.
 - Ver `.env.example` y `ENV_SETUP.md`.
 
+## 5a. Herramientas y secretos (`adminExe/`)
+
+- Herramientas externas SOLO vía `adminExe/requirements-tools.txt` + `descargar_tools.py` (SHA-256 obligatorio).
+  Nunca descargar binarios sin hash ni versionarlos: `adminExe/dist/` está en `.gitignore`.
+- Salidas: `adminExe/dist/toolsForWindows/` (.exe) y `adminExe/dist/toolsForLinux/` (bin/ + `.deb`).
+- Antes de cualquier commit corre el hook `adminExe/hooks/pre-commit` (`git config core.hooksPath adminExe/hooks`).
+  Si marca algo: moverlo a `.env`; solo datos de prueba llevan `# secretos: permitido`.
+- Publicar: `.\publicar_github.ps1 -Mensaje "..."` (escanea archivos + historial y corre pruebas antes del push).
+
+## 5b. Pruebas
+
+- `manage.py test` (40 pruebas: permisos, XSS, CSRF, editor, métricas, tutor, generadores). CI: `.github/workflows/ci.yml`.
+- Toda vista nueva de staff: `@staff_member_required`; toda acción que modifica datos: `@require_POST` + CSRF.
+- Todo dato de bloque pasa por `blog.bloques.limpiar()` (lista blanca). Nunca `|safe` sobre datos de usuario.
+- Archivos apartados para borrar: `_to_delete/` (ignorado por git).
+
 ## 6. Convenciones
 
 - Idioma: español en código de dominio, comentarios y UI.
@@ -95,6 +115,7 @@ Activar venv: `.\.venv\Scripts\Activate.ps1` (PowerShell) / `.venv\Scripts\activ
 
 ## 7. Pendientes conocidos
 
-- `settings.py` conserva una contraseña MySQL por defecto en código: moverla solo a `.env`.
-- `.._` en la raíz es basura AppleDouble (macOS); se puede borrar.
-- `tailwindcss` (ELF Linux) se mantiene para el flujo Linux; en Windows se ignora.
+- Dos sistemas de artículos: `mainapp.Article` (CRUD clásico) y `blog.Articulo_Page` (bloques). Migrar el primero
+  al segundo y retirar el CRUD clásico.
+- `django-ckeditor` empaqueta CKEditor 4 sin soporte (aviso `ckeditor.W001`); el editor por bloques ya no lo necesita.
+- `.._` en la raíz es basura AppleDouble (macOS); ignorado por git.

@@ -7,24 +7,30 @@ from mainapp.models import Article
 from mainapp.forms import ArticleForm
 
 def index(request):
-    return render(request, "paginas_principales/index.html")
+    """Portada: temas del entrenador y últimos artículos publicados."""
+    from blog.models import Articulo_Page
+    from entrenador.models import Tema
+    return render(request, "paginas_principales/index.html", {
+        "temas": Tema.objects.filter(activo=True).order_by("orden")[:7],
+        "articulos": (Articulo_Page.objects.filter(publicado=True)
+                      .select_related("user").prefetch_related("categoria")[:3]),
+    })
 
 def hola_mundo(request):
     return render(request, "paginas_principales/hola_mundo.html")
 
-def pagina_pruebas(request, redirigir=0):
-    if redirigir == 1:
-        return redirect('mainapp:contacto', nombre='Ruben', apellidos='Andres')
-
-    return render(request, "paginas_principales/pagina_pruebas.html", {
-        'texto_test':"Hola como estas",
-        'lista':["1","2","3","3"]
-    })
-
-def contacto(request, nombre="User", apellidos="Lastname"):
-    return render(request, "paginas_principales/contacto.html", {
-        "title": f"Contacto {nombre} {apellidos}"
-    })
+def contacto(request):
+    from mensajes.forms import ContactoForm
+    previo = request.session.pop("contacto_errores", None)
+    if previo:
+        form = ContactoForm(previo["datos"])
+        form.is_valid()  # vuelve a calcular los errores para mostrarlos
+    else:
+        inicial = {}
+        if request.user.is_authenticated:
+            inicial = {"nombre": request.user.get_full_name() or request.user.username, "email": request.user.email}
+        form = ContactoForm(initial=inicial)
+    return render(request, "paginas_principales/contacto.html", {"title": "Contacto", "form": form})
 
 # --- Vistas para Artículos (CRUD) ---
 def buscar_articulos(request):

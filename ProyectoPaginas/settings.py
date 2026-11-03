@@ -25,10 +25,16 @@ environ.Env.read_env(BASE_DIR / '.env')
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY: Read SECRET_KEY from environment (MUST be set in .env for production)
-SECRET_KEY = env.str('SECRET_KEY', default='django-insecure-default-key-change-in-production')
+SECRET_KEY = env.str('SECRET_KEY', default='django-insecure-solo-desarrollo-local')
 
 # Read DEBUG from environment (defaults to True for development)
-DEBUG = env.bool('DEBUG', default=True)
+# Seguro por defecto: sin .env el sitio arranca en modo producción (DEBUG=False).
+DEBUG = env.bool('DEBUG', default=False)
+
+if not DEBUG and (SECRET_KEY.startswith('django-insecure') or len(SECRET_KEY) < 40):
+    from django.core.exceptions import ImproperlyConfigured
+    raise ImproperlyConfigured(
+        'SECRET_KEY insegura con DEBUG=False. Genera una con get_random_secret_key() y ponla en .env.')
 
 # Read ALLOWED_HOSTS from environment (comma-separated string)
 # Permite silenciar checks puntuales desde el entorno (p. ej. CI sin Pillow)
@@ -51,11 +57,14 @@ INSTALLED_APPS = [
     'blog',
     'login_and_reg',
     'entrenador',
-
-
-# Django Extensions (agregar al final)
-    'django_extensions',
+    'perfil',
+    'mensajes',
 ]
+
+# Herramientas de desarrollo: solo si están instaladas (requirements-dev.txt)
+from importlib.util import find_spec as _find_spec
+if _find_spec('django_extensions'):
+    INSTALLED_APPS.append('django_extensions')
 
 
 MIDDLEWARE = [
@@ -67,6 +76,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.csp.ContentSecurityPolicyMiddleware',
 ]
 
 ROOT_URLCONF = 'ProyectoPaginas.urls'
@@ -83,6 +93,8 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'pages.context_processors.get_pages',
                 'blog.context_processors.get_categorias',
+                'perfil.context_processors.sitio',
+                'mensajes.context_processors.no_leidos',
             ],
         },
     },
@@ -170,7 +182,7 @@ INTERNAL_IPS = [
     "127.0.0.1",
 ]
 
-if DEBUG:
+if DEBUG and _find_spec('debug_toolbar'):
     INSTALLED_APPS += [
         "debug_toolbar",
     ]
@@ -196,13 +208,31 @@ SECURE_HSTS_PRELOAD = env.bool('SECURE_HSTS_PRELOAD', default=False)
 
 # Recommended security settings (independent of DEBUG)
 X_FRAME_OPTIONS = 'DENY'
-SECURE_CONTENT_SECURITY_POLICY = {
-    'default-src': ["'self'"],
-    'script-src': ["'self'", "'unsafe-inline'", "cdn.jsdelivr.net"],
-    'style-src': ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "cdn.jsdelivr.net"],
-    'font-src': ["'self'", "https://fonts.gstatic.com", "cdnjs.cloudflare.com"],
-    'img-src': ["'self'", "data:", "https:"],
-    'connect-src': ["'self'"],
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
+
+# Bloqueo de fuerza bruta en el login (ver login_and_reg/views.py)
+LOGIN_MAX_INTENTOS = env.int('LOGIN_MAX_INTENTOS', default=5)
+LOGIN_BLOQUEO_SEGUNDOS = env.int('LOGIN_BLOQUEO_SEGUNDOS', default=15 * 60)
+# Content-Security-Policy real (Django 6: SECURE_CSP + ContentSecurityPolicyMiddleware).
+# Limita de dónde se cargan scripts, estilos, fuentes, imágenes y marcos.
+# 'unsafe-eval' lo exige Alpine.js; 'unsafe-inline' los scripts en línea de las plantillas.
+from django.utils.csp import CSP  # noqa: E402
+SECURE_CSP = {
+    'default-src': [CSP.SELF],
+    'script-src': [CSP.SELF, CSP.UNSAFE_INLINE, CSP.UNSAFE_EVAL, 'https://cdn.jsdelivr.net'],
+    'style-src': [CSP.SELF, CSP.UNSAFE_INLINE, 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com'],
+    'font-src': [CSP.SELF, 'data:', 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com', 'https://cdn.jsdelivr.net'],
+    'img-src': [CSP.SELF, 'data:', 'https:'],
+    'connect-src': [CSP.SELF],
+    'frame-src': ['https://www.youtube-nocookie.com'],
+    'object-src': [CSP.NONE],
+    'base-uri': [CSP.SELF],
+    'form-action': [CSP.SELF],
+    'frame-ancestors': [CSP.NONE],
 }
 
 # Production-grade settings: auto-enable when DEBUG=False

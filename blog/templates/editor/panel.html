@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}Editor de artículos{% endblock %}
+{% block content %}
+<div class="flex flex-wrap items-end justify-between gap-4 mb-8">
+  <div>
+    <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white">Editor de artículos</h1>
+    <p class="text-slate-500 mt-1">Crea artículos a partir de plantillas y edítalos con vista previa en vivo.</p>
+  </div>
+  <div class="flex gap-2">
+    <a href="{% url 'blog:metricas' %}" class="btn-secundario"><i class="fas fa-chart-simple"></i> Métricas</a>
+    <a href="{% url 'blog:editor_nuevo' %}" class="btn-primario"><i class="fas fa-plus"></i> Nuevo artículo</a>
+  </div>
+</div>
+
+<div class="tarjeta overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-slate-50 dark:bg-slate-800/50 text-left text-slate-500">
+      <tr><th class="px-4 py-3">Título</th><th class="px-4 py-3 hidden md:table-cell">Plantilla</th><th class="px-4 py-3 hidden sm:table-cell">Bloques</th><th class="px-4 py-3">Estado</th><th class="px-4 py-3 hidden md:table-cell">Editado</th><th class="px-4 py-3"></th></tr>
+    </thead>
+    <tbody>
+      {% for a in articulos %}
+      <tr class="border-t border-slate-100 dark:border-slate-800">
+        <td class="px-4 py-3 font-semibold text-slate-900 dark:text-white"><a href="{% url 'blog:editor' a.id %}" class="hover:text-indigo-600">{{ a.title }}</a></td>
+        <td class="px-4 py-3 hidden md:table-cell text-slate-500">{% if a.plantilla %}<i class="fas fa-{{ a.plantilla.icono }}"></i> {{ a.plantilla.nombre }}{% else %}—{% endif %}</td>
+        <td class="px-4 py-3 hidden sm:table-cell text-slate-500">{{ a.n_bloques }}</td>
+        <td class="px-4 py-3">{% if a.publicado %}<span class="px-2 py-0.5 rounded-full text-xs bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">Publicado</span>{% else %}<span class="px-2 py-0.5 rounded-full text-xs bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">Borrador</span>{% endif %}</td>
+        <td class="px-4 py-3 hidden md:table-cell text-slate-500">{{ a.modified_at|timesince }}</td>
+        <td class="px-4 py-3 text-right whitespace-nowrap">
+          <a href="{% url 'blog:editor' a.id %}" class="btn-secundario !px-3 !py-1.5" aria-label="Editar {{ a.title }}"><i class="fas fa-pen"></i></a>
+          <a href="{% url 'blog:detalle_publicacion' a.id %}" class="btn-secundario !px-3 !py-1.5" aria-label="Ver {{ a.title }}"><i class="fas fa-eye"></i></a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" class="px-4 py-12 text-center text-slate-500">Aún no hay artículos. <a href="{% url 'blog:editor_nuevo' %}" class="text-indigo-600 font-semibold">Crea el primero →</a></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

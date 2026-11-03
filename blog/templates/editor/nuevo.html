@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Nuevo artículo{% endblock %}
+{% block content %}
+<form method="post" x-data="{ sel: '{{ plantillas.0.pk|default:'' }}' }" class="max-w-5xl mx-auto">
+  {% csrf_token %}
+  <a href="{% url 'blog:editor_panel' %}" class="nav-link inline-flex -ml-3 mb-4"><i class="fas fa-arrow-left"></i> Editor</a>
+  <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white">Nuevo artículo</h1>
+
+  <label for="titulo" class="etiqueta mt-6">Título</label>
+  <input id="titulo" name="titulo" required maxlength="100" placeholder="Ej. Cómo resolver ecuaciones de segundo grado" class="campo text-lg">
+
+  <h2 class="mt-8 font-bold text-slate-900 dark:text-white">Elige una plantilla</h2>
+  <p class="text-sm text-slate-500">Cada elemento de la plantilla se convierte en un bloque que podrás editar, mover o borrar.</p>
+  <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="radiogroup">
+    {% for p in plantillas %}
+    <label class="tarjeta p-5 cursor-pointer transition-all" :class="sel == '{{ p.pk }}' ? 'ring-2 ring-indigo-500 border-indigo-500' : 'hover:border-indigo-300'">
+      <input type="radio" name="plantilla" value="{{ p.pk }}" x-model="sel" class="sr-only">
+      <div class="flex items-center gap-3">
+        <span class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center"><i class="fas fa-{{ p.icono }}"></i></span>
+        <span class="font-bold text-slate-900 dark:text-white">{{ p.nombre }}</span>
+      </div>
+      <p class="mt-2 text-sm text-slate-500">{{ p.descripcion }}</p>
+      {# Miniatura: secuencia de bloques de la plantilla #}
+      <div class="mt-4 space-y-1">
+        {% for el in p.estructura|slice:":7" %}
+        <div class="flex items-center gap-2 text-xs text-slate-400">
+          {% if el.tipo == 'titulo' %}<span class="h-2.5 w-2/3 rounded bg-slate-300 dark:bg-slate-600"></span>
+          {% elif el.tipo == 'imagen' %}<span class="h-6 w-full rounded bg-slate-200 dark:bg-slate-700 flex items-center justify-center"><i class="fas fa-image text-[10px]"></i></span>
+          {% elif el.tipo == 'tabla' %}<span class="h-5 w-full rounded border border-dashed border-slate-300 dark:border-slate-600"></span>
+          {% elif el.tipo == 'formula' %}<span class="h-4 w-1/2 mx-auto rounded bg-indigo-100 dark:bg-indigo-500/20"></span>
+          {% elif el.tipo == 'aviso' %}<span class="h-4 w-full rounded border-l-4 border-blue-400 bg-blue-50 dark:bg-blue-500/10"></span>
+          {% else %}<span class="h-1.5 w-full rounded bg-slate-200 dark:bg-slate-700"></span>{% endif %}
+        </div>
+        {% endfor %}
+        {% if p.estructura|length > 7 %}<p class="text-[10px] text-slate-400">+{{ p.estructura|length|add:"-7" }} bloques más</p>{% endif %}
+      </div>
+    </label>
+    {% endfor %}
+    <label class="tarjeta p-5 cursor-pointer border-dashed" :class="sel == '' ? 'ring-2 ring-indigo-500 border-indigo-500' : ''">
+      <input type="radio" name="plantilla" value="" x-model="sel" class="sr-only">
+      <div class="flex items-center gap-3"><span class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center"><i class="fas fa-file"></i></span><span class="font-bold text-slate-900 dark:text-white">En blanco</span></div>
+      <p class="mt-2 text-sm text-slate-500">Empieza sin bloques y agrégalos tú.</p>
+    </label>
+  </div>
+  <div class="mt-8 flex justify-end"><button type="submit" class="btn-primario text-base px-6 py-3">Crear borrador <i class="fas fa-arrow-right"></i></button></div>
+</form>
+{% endblock %}

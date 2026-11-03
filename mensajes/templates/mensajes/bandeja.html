@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Mensajes{% endblock %}
+{% block content %}
+<div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+  <div><h1 class="text-3xl font-extrabold text-slate-900 dark:text-white">Bandeja de mensajes</h1>
+  <p class="text-slate-500 mt-1">{{ mensajes_no_leidos }} sin leer</p></div>
+  <nav class="flex gap-1 text-sm">
+    <a href="?f=todos" class="nav-link {% if filtro == 'todos' %}nav-activo{% endif %}">Todos</a>
+    <a href="?f=sin_leer" class="nav-link {% if filtro == 'sin_leer' %}nav-activo{% endif %}">Sin leer</a>
+    <a href="?f=pendientes" class="nav-link {% if filtro == 'pendientes' %}nav-activo{% endif %}">Sin responder</a>
+  </nav>
+</div>
+<div class="tarjeta divide-y divide-slate-100 dark:divide-slate-800">
+  {% for m in lista %}
+  <a href="{% url 'mensajes:detalle' m.id %}" class="flex items-start gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+    <span class="mt-2 w-2 h-2 rounded-full shrink-0 {% if not m.leido %}bg-indigo-600{% else %}bg-transparent{% endif %}" {% if not m.leido %}aria-label="Sin leer"{% endif %}></span>
+    <span class="flex-grow min-w-0">
+      <span class="flex justify-between gap-2"><span class="{% if not m.leido %}font-bold{% else %}font-medium{% endif %} text-slate-900 dark:text-white truncate">{{ m.asunto }}</span><span class="text-xs text-slate-400 shrink-0">{{ m.creado|timesince }}</span></span>
+      <span class="block text-sm text-slate-500 truncate">{{ m.nombre }} · {{ m.cuerpo|truncatechars:90 }}</span>
+    </span>
+    {% if m.respondido %}<span class="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300 shrink-0">Respondido</span>{% endif %}
+  </a>
+  {% empty %}
+  <p class="p-10 text-center text-slate-500"><i class="fas fa-inbox text-3xl text-slate-300 dark:text-slate-700"></i><br>No hay mensajes aquí.</p>
+  {% endfor %}
+</div>
+{% endblock %}

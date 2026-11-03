@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}{{ m.asunto }}{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  <a href="{% url 'mensajes:bandeja' %}" class="nav-link inline-flex -ml-3 mb-4"><i class="fas fa-arrow-left"></i> Bandeja</a>
+  <article class="tarjeta p-6">
+    <h1 class="text-2xl font-extrabold text-slate-900 dark:text-white">{{ m.asunto }}</h1>
+    <p class="mt-1 text-sm text-slate-500">{{ m.nombre }} · <a href="mailto:{{ m.email }}?subject=Re: {{ m.asunto|urlencode }}" class="text-indigo-600">{{ m.email }}</a>{% if m.usuario %} · usuario @{{ m.usuario.username }}{% endif %} · {{ m.creado|date:"d M Y, H:i" }}</p>
+    <div class="mt-6 text-slate-700 dark:text-slate-300 whitespace-pre-line">{{ m.cuerpo }}</div>
+  </article>
+
+  <form method="post" class="tarjeta p-6 mt-6 space-y-3">
+    {% csrf_token %}
+    <label class="etiqueta" for="{{ form.respuesta.id_for_label }}">{% if m.respondido %}Respuesta (enviada {{ m.respondido_en|date:"d M Y, H:i" }}){% else %}Responder{% endif %}</label>
+    {{ form.respuesta }}
+    <p class="text-xs text-slate-500">{% if m.usuario %}El usuario verá la respuesta en «Mis mensajes».{% else %}El remitente no tiene cuenta: usa el botón de correo para enviarle la respuesta.{% endif %}</p>
+    <div class="flex flex-wrap gap-2">
+      <button type="submit" class="btn-primario"><i class="fas fa-reply"></i> Guardar respuesta</button>
+      <a href="mailto:{{ m.email }}?subject=Re: {{ m.asunto|urlencode }}&body={{ m.respuesta|urlencode }}" class="btn-secundario"><i class="fas fa-envelope"></i> Responder por correo</a>
+      <button type="submit" name="accion" value="no_leido" formnovalidate class="btn-secundario">Marcar no leído</button>
+      <button type="submit" name="accion" value="eliminar" formnovalidate onclick="return confirm('¿Eliminar este mensaje?')" class="btn-peligro ml-auto"><i class="fas fa-trash"></i></button>
+    </div>
+  </form>
+</div>
+{% endblock %}

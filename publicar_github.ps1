@@ -1,17 +1,49 @@
-<# Sube el proyecto a GitHub. Uso:
-   .\publicar_github.ps1 -Usuario TU_USUARIO_GITHUB
-   Requiere haber creado VACIO https://github.com/TU_USUARIO/ProyectoPaginasProduction #>
-param([Parameter(Mandatory)][string]$Usuario, [string]$Repo = "ProyectoPaginasProduction")
+<#
+  publicar_github.ps1 - Sube el proyecto a GitHub SIN filtrar llaves.
+  Uso (PowerShell, en la raiz del proyecto):
+      .\publicar_github.ps1 -Mensaje "Describe el cambio"
+  Pasos: activa el hook anti-secretos, revisa archivos y TODO el historial,
+  muestra lo que se subira, pide confirmacion, hace commit y push.
+#>
+param(
+    [string]$Mensaje = "Actualiza plataforma MathMaster",
+    [string]$Remoto = "https://github.com/RubenAndresGome/ProyectoPaginasProduction.git"
+)
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
-if (-not (Get-Command git -ErrorAction SilentlyContinue)) { throw "Instala Git en D:\DevTools\git" }
-if (-not (Test-Path .git)) { git init -b main }
+$py = if (Test-Path ".venv\Scripts\python.exe") { ".venv\Scripts\python.exe" } else { "python" }
+
+function Paso($m) { Write-Host "`n==> $m" -ForegroundColor Cyan }
+function Falla($m) { Write-Host "`n[DETENIDO] $m" -ForegroundColor Red; exit 1 }
+
+if (-not (Get-Command git -ErrorAction SilentlyContinue)) { Falla "No encuentro git." }
+if (-not (Test-Path .git)) { git init -b main | Out-Null }
+
+Paso "Activando hook pre-commit anti-secretos"
+git config core.hooksPath adminExe/hooks
+
+Paso "Buscando secretos en los archivos que se subirian"
+& $py adminExe\escanear_secretos.py --todo
+if ($LASTEXITCODE -ne 0) { Falla "Hay posibles secretos. Muevelos a .env o marcalos como permitidos." }
+
+Paso "Buscando secretos en TODO el historial de git"
+& $py adminExe\escanear_secretos.py --historial
+if ($LASTEXITCODE -ne 0) { Falla "El historial ya contiene secretos: hay que reescribirlo antes de publicar (pide ayuda)." }
+
+Paso "Pruebas automaticas"
+& $py manage.py test --verbosity 0
+if ($LASTEXITCODE -ne 0) { Falla "Las pruebas fallaron." }
+
 git add -A
-Write-Host "`nArchivos que se subiran:" -ForegroundColor Cyan; git status --short
-$sens = git ls-files --cached | Select-String -Pattern 'SuperUser|User\.txt|\.env$|sqlite3|Informe_Residencia'
-if ($sens) { throw "Archivo sensible en el commit: $sens" }
-git commit -m "Publicacion inicial: plataforma Django de matematicas remediales"
-git remote remove origin 2>$null
-git remote add origin "https://github.com/$Usuario/$Repo.git"
+git update-index --chmod=+x adminExe/hooks/pre-commit 2>$null
+Paso "Cambios que se subiran"
+git status --short
+$ok = Read-Host "`nEscribe SI para hacer commit y push"
+if ($ok -ne "SI") { git reset -q; Falla "Cancelado por el usuario (no se cambio nada)." }
+
+git commit -m $Mensaje
+if ($LASTEXITCODE -ne 0) { Falla "El commit no se hizo (revisa el mensaje del hook)." }
+if (-not (git remote 2>$null | Select-String -Quiet '^origin$')) { git remote add origin $Remoto }
 git push -u origin main
-Write-Host "Publicado: https://github.com/$Usuario/$Repo" -ForegroundColor Green
+if ($LASTEXITCODE -ne 0) { Falla "El push fallo." }
+Write-Host "`nPublicado: $($Remoto -replace '\.git$','')" -ForegroundColor Green

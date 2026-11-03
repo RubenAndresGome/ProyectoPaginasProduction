@@ -1,0 +1,62 @@
+{# Tutor flotante (bot por reglas). Usa /mensajes/tutor/ #}
+<div x-data="tutorChat('{% url 'mensajes:bot' %}')" class="fixed bottom-4 right-4 z-50 print:hidden">
+  <div x-show="abierto" x-transition.origin.bottom.right style="display:none" role="dialog" aria-label="Tutor MathMaster"
+       class="mb-3 w-[calc(100vw-2rem)] max-w-sm h-[28rem] tarjeta shadow-2xl flex flex-col overflow-hidden">
+    <header class="px-4 py-3 bg-gradient-to-r from-indigo-600 to-cyan-600 text-white flex items-center gap-3">
+      <span class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center"><i class="fas fa-robot"></i></span>
+      <span class="flex-grow"><span class="block font-bold text-sm">Tutor MathMaster</span><span class="text-xs text-white/80">Te digo qué practicar</span></span>
+      <button type="button" @click="abierto=false" class="p-1 hover:bg-white/10 rounded" aria-label="Cerrar tutor"><i class="fas fa-xmark"></i></button>
+    </header>
+    <div x-ref="log" class="flex-grow overflow-y-auto p-4 space-y-3 text-sm" aria-live="polite">
+      <template x-for="(m, i) in log" :key="i">
+        <div :class="m.yo ? 'flex justify-end' : ''">
+          <div :class="m.yo ? 'bg-indigo-600 text-white rounded-2xl rounded-br-sm' : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-2xl rounded-bl-sm'" class="px-3 py-2 max-w-[85%]">
+            <p x-text="m.texto"></p>
+            <template x-for="e in (m.enlaces || [])"><a :href="e.url" class="mt-2 flex items-center gap-1 font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"><i class="fas fa-arrow-right text-[10px]"></i> <span x-text="e.texto"></span></a></template>
+          </div>
+        </div>
+      </template>
+      <div x-show="pensando" class="text-slate-400 text-xs"><i class="fas fa-ellipsis fa-fade"></i> escribiendo…</div>
+    </div>
+    <div class="px-3 pb-2 flex flex-wrap gap-1" x-show="sugerencias.length">
+      <template x-for="s in sugerencias"><button type="button" @click="enviar(s)" class="text-xs px-2 py-1 rounded-full border border-indigo-200 dark:border-indigo-500/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-500/10" x-text="s"></button></template>
+    </div>
+    <form @submit.prevent="enviar(texto)" class="p-3 border-t border-slate-200 dark:border-slate-800 flex gap-2">
+      <label class="sr-only" for="tutor-texto">Escribe tu pregunta</label>
+      <input id="tutor-texto" x-model="texto" maxlength="300" autocomplete="off" placeholder="Pregunta algo…" class="campo !py-1.5 text-sm">
+      <button type="submit" class="btn-primario !px-3" aria-label="Enviar"><i class="fas fa-paper-plane"></i></button>
+    </form>
+  </div>
+  <button type="button" @click="abrir()" :aria-expanded="abierto" class="ml-auto flex w-14 h-14 rounded-full bg-gradient-to-br from-indigo-600 to-cyan-500 text-white shadow-lg shadow-indigo-500/30 items-center justify-center text-xl hover:scale-105 transition-transform" aria-label="Abrir tutor">
+    <i class="fas" :class="abierto ? 'fa-xmark' : 'fa-robot'"></i>
+  </button>
+</div>
+<script>
+function tutorChat(url) {
+  const csrf = () => (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '';
+  return {
+    abierto: false, texto: '', pensando: false, log: [], sugerencias: [],
+    abrir() {
+      this.abierto = !this.abierto;
+      if (this.abierto && !this.log.length) this.enviar('hola', true);
+      this.$nextTick(() => document.getElementById('tutor-texto')?.focus());
+    },
+    async enviar(t, oculto = false) {
+      t = (t || '').trim(); if (!t) return;
+      if (!oculto) this.log.push({ yo: true, texto: t });
+      this.texto = ''; this.sugerencias = []; this.pensando = true;
+      try {
+        const r = await fetch(url, { method: 'POST', credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf() }, body: JSON.stringify({ texto: t }) });
+        const d = await r.json();
+        this.log.push({ yo: false, texto: d.texto, enlaces: d.enlaces });
+        this.sugerencias = d.sugerencias || [];
+      } catch (e) {
+        this.log.push({ yo: false, texto: 'No pude responder ahora. Intenta de nuevo.' });
+      }
+      this.pensando = false;
+      this.$nextTick(() => { this.$refs.log.scrollTop = this.$refs.log.scrollHeight; });
+    },
+  };
+}
+</script>

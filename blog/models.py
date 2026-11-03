@@ -39,7 +39,8 @@ class Articulo_Page(models.Model):
         upload_to='articulos_posts_blog/'
     )
     categoria = models.ManyToManyField(Categoria, verbose_name='Categorias', blank=True, related_name="articulos")
-    publicado = models.BooleanField(verbose_name='Publicado o No? ', default=True)
+    publicado = models.BooleanField(verbose_name='Publicado', default=True)
+    veces_compartido = models.PositiveIntegerField(default=0, editable=False)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de creacion')
     modified_at = models.DateTimeField(auto_now=True, verbose_name='Fecha de modificacion')
 
@@ -183,3 +184,27 @@ class Bloque(models.Model):
         partes = [str(d.get(k, '')) for k in ('texto', 'pie', 'descripcion', 'autor')]
         partes += [str(x) for x in d.get('items', [])]
         return ' '.join(p for p in partes if p)
+
+
+
+class MeGusta(models.Model):
+    articulo = models.ForeignKey(Articulo_Page, on_delete=models.CASCADE, related_name='me_gusta')
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='me_gusta')
+    creado = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['articulo', 'usuario'], name='un_megusta_por_usuario')]
+        verbose_name = 'Me gusta'
+        verbose_name_plural = 'Me gusta'
+
+
+class VistaArticulo(models.Model):
+    """Una vista única por visitante (usuario o sesión) y día."""
+    articulo = models.ForeignKey(Articulo_Page, on_delete=models.CASCADE, related_name='vistas')
+    visitante = models.CharField(max_length=64)
+    fecha = models.DateField(db_index=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['articulo', 'visitante', 'fecha'], name='una_vista_por_dia')]
+        verbose_name = 'Vista de artículo'
+        verbose_name_plural = 'Vistas de artículos'

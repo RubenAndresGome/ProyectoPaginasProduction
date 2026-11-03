@@ -1,0 +1,9 @@
+{# Cuerpo del artículo: lo usan la página pública y la vista previa del editor (una sola fuente). #}
+<div class="post-content">
+  {% for bloque in articulo.bloques.all %}
+    <div data-bloque="{{ bloque.id }}">{% include bloque.plantilla_html %}</div>
+  {% empty %}
+    {% if not articulo.content %}<p class="text-slate-400 italic">Este artículo aún no tiene contenido.</p>{% endif %}
+  {% endfor %}
+  {% if articulo.content %}{{ articulo.content|safe }}{% endif %}
+</div>

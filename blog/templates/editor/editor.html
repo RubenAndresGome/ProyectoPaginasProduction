@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Editar · {{ articulo.title }}{% endblock %}
+{% block main_class %}w-full px-4 py-6{% endblock %}
+{% block tutor %}{% endblock %}
+
+{% block content %}
+{{ bloques_json|json_script:"datos-bloques" }}
+{{ tipos|json_script:"datos-tipos" }}
+{{ cats_sel|json_script:"datos-cats" }}
+<div x-data="editorArticulo({
+        base: '{% url 'blog:editor' articulo.id %}api/',
+        titulo: '{{ articulo.title|escapejs }}',
+        publicado: {{ articulo.publicado|yesno:'true,false' }},
+        portada: '{% if articulo.imagen %}{{ articulo.imagen.url }}{% endif %}'
+     })" class="max-w-[1600px] mx-auto">
+
+  {# ---------- Barra superior ---------- #}
+  <div class="flex flex-wrap items-center gap-3 mb-4">
+    <a href="{% url 'blog:editor_panel' %}" class="nav-link -ml-3"><i class="fas fa-arrow-left"></i> Artículos</a>
+    <span class="text-xs" :class="estadoClase" x-text="estado" aria-live="polite"></span>
+    <div class="ml-auto flex items-center gap-2">
+      <div class="inline-flex lg:hidden rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden text-sm">
+        <button type="button" @click="vista='editar'" :class="vista==='editar' ? 'bg-indigo-600 text-white' : ''" class="px-3 py-1.5">Editar</button>
+        <button type="button" @click="vista='previa'" :class="vista==='previa' ? 'bg-indigo-600 text-white' : ''" class="px-3 py-1.5">Vista previa</button>
+      </div>
+      <a href="{% url 'blog:detalle_publicacion' articulo.id %}" target="_blank" class="btn-secundario"><i class="fas fa-up-right-from-square"></i> <span class="hidden sm:inline">Abrir</span></a>
+      <button type="button" @click="publicado = !publicado; guardarMeta()" class="btn-primario" :class="publicado ? '!bg-emerald-600 hover:!bg-emerald-500' : ''">
+        <i class="fas" :class="publicado ? 'fa-circle-check' : 'fa-paper-plane'"></i>
+        <span x-text="publicado ? 'Publicado' : 'Publicar'"></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-2">
+    {# ================= Columna de edición ================= #}
+    <section :class="vista==='editar' ? '' : 'hidden lg:block'" class="space-y-4 lg:max-h-[calc(100vh-9rem)] lg:overflow-y-auto lg:pr-2" aria-label="Edición">
+      <div class="tarjeta p-5 space-y-4">
+        <div>
+          <label for="titulo" class="etiqueta">Título</label>
+          <input id="titulo" class="campo text-lg font-bold" maxlength="100" x-model="titulo" @input.debounce.600ms="guardarMeta()">
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <span class="etiqueta">Categorías</span>
+            <div class="flex flex-wrap gap-2">
+              {% for c in categorias %}
+              <label class="text-xs px-2 py-1 rounded-full border cursor-pointer select-none" :class="cats.includes({{ c.id }}) ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-300 dark:border-slate-600'">
+                <input type="checkbox" class="sr-only" :checked="cats.includes({{ c.id }})" @change="toggleCat({{ c.id }})"> {{ c.name }}
+              </label>
+              {% empty %}<span class="text-xs text-slate-400">Sin categorías (créalas en el admin).</span>{% endfor %}
+            </div>
+          </div>
+          <div>
+            <span class="etiqueta">Portada</span>
+            <div class="flex items-center gap-2">
+              <template x-if="portada"><img :src="portada" alt="" class="w-16 h-10 rounded object-cover"></template>
+              <label class="btn-secundario !py-1.5 cursor-pointer text-xs"><i class="fas fa-upload"></i> Subir<input type="file" accept="image/*" class="sr-only" @change="subirPortada($event)"></label>
+              <button type="button" x-show="portada" @click="quitarPortada()" class="text-xs text-red-600">Quitar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {# ---------- Bloques ---------- #}
+      <template x-for="(b, i) in bloques" :key="b.id">
+        <div class="tarjeta p-4" :class="activo === b.id ? 'ring-2 ring-indigo-500' : ''" @focusin="activo = b.id" @mouseenter="resaltar(b.id)">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xs"><i class="fas" :class="'fa-' + b.icono"></i></span>
+            <span class="text-sm font-semibold text-slate-700 dark:text-slate-200" x-text="nombreTipo(b.tipo)"></span>
+            <div class="ml-auto flex items-center gap-1 text-slate-400">
+              <button type="button" @click="mover(i, -1)" :disabled="i === 0" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30" aria-label="Subir bloque"><i class="fas fa-arrow-up"></i></button>
+              <button type="button" @click="mover(i, 1)" :disabled="i === bloques.length - 1" class="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30" aria-label="Bajar bloque"><i class="fas fa-arrow-down"></i></button>
+              <button type="button" @click="borrar(b, i)" class="p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600" aria-label="Eliminar bloque"><i class="fas fa-trash"></i></button>
+            </div>
+          </div>
+
+          {# Formularios por tipo: cada cambio guarda y refresca la vista previa #}
+          <div @input.debounce.500ms="guardar(b)" @change="guardar(b)" class="space-y-2">
+            <template x-if="b.tipo === 'titulo'"><div class="flex gap-2">
+              <input class="campo font-bold" x-model="b.datos.texto" placeholder="Subtítulo">
+              <select class="campo !w-24" x-model="b.datos.nivel"><option value="2">H2</option><option value="3">H3</option></select>
+            </div></template>
+            <template x-if="b.tipo === 'parrafo'"><textarea class="campo" rows="4" x-model="b.datos.texto" placeholder="Texto del párrafo"></textarea></template>
+            <template x-if="b.tipo === 'cita'"><div class="space-y-2">
+              <textarea class="campo" rows="2" x-model="b.datos.texto" placeholder="Cita"></textarea>
+              <input class="campo" x-model="b.datos.autor" placeholder="Autor (opcional)">
+            </div></template>
+            <template x-if="b.tipo === 'aviso'"><div class="space-y-2">
+              <textarea class="campo" rows="2" x-model="b.datos.texto"></textarea>
+              <select class="campo" x-model="b.datos.variante"><option value="info">💡 Información</option><option value="exito">✅ Éxito / conclusión</option><option value="alerta">⚠️ Advertencia</option></select>
+            </div></template>
+            <template x-if="b.tipo === 'formula'"><div>
+              <input class="campo font-mono" x-model="b.datos.latex" placeholder="a^2 + b^2 = c^2">
+              <p class="text-xs text-slate-400 mt-1">Notación LaTeX. Ej: <code>\frac{a}{b}</code>, <code>\sqrt{x}</code>, <code>x^{2}</code></p>
+            </div></template>
+            <template x-if="b.tipo === 'codigo'"><div class="space-y-2">
+              <input class="campo !w-40 text-xs" x-model="b.datos.lenguaje" placeholder="lenguaje">
+              <textarea class="campo font-mono text-sm" rows="5" x-model="b.datos.codigo" spellcheck="false"></textarea>
+            </div></template>
+            <template x-if="b.tipo === 'enlace'"><div class="space-y-2">
+              <input class="campo" type="url" x-model="b.datos.url" placeholder="https://… o /ruta-interna/">
+              <input class="campo" x-model="b.datos.texto" placeholder="Texto del enlace">
+              <input class="campo" x-model="b.datos.descripcion" placeholder="Descripción (opcional)">
+            </div></template>
+            <template x-if="b.tipo === 'video'"><input class="campo" type="url" x-model="b.datos.url" placeholder="https://www.youtube.com/watch?v=…"></template>
+            <template x-if="b.tipo === 'imagen'"><div class="space-y-2">
+              <div class="flex items-center gap-3">
+                <template x-if="b.imagen"><img :src="b.imagen" alt="" class="w-20 h-14 rounded object-cover"></template>
+                <label class="btn-secundario cursor-pointer text-xs"><i class="fas fa-upload"></i> <span x-text="b.imagen ? 'Cambiar imagen' : 'Subir imagen'"></span><input type="file" accept="image/*" class="sr-only" @change.stop="subirImagen(b, $event)"></label>
+              </div>
+              <input class="campo" x-model="b.datos.pie" placeholder="Pie de foto">
+              <input class="campo" x-model="b.datos.alt" placeholder="Texto alternativo (accesibilidad)">
+            </div></template>
+            <template x-if="b.tipo === 'lista'"><div class="space-y-2">
+              <template x-for="(item, j) in b.datos.items" :key="j">
+                <div class="flex gap-2"><input class="campo" x-model="b.datos.items[j]"><button type="button" @click="b.datos.items.splice(j,1); guardar(b)" class="px-2 text-slate-400 hover:text-red-600" aria-label="Quitar elemento"><i class="fas fa-xmark"></i></button></div>
+              </template>
+              <div class="flex items-center justify-between">
+                <button type="button" @click="b.datos.items.push(''); guardar(b)" class="text-sm text-indigo-600 font-semibold"><i class="fas fa-plus"></i> Elemento</button>
+                <label class="text-sm flex items-center gap-2"><input type="checkbox" x-model="b.datos.ordenada"> Numerada</label>
+              </div>
+            </div></template>
+            <template x-if="b.tipo === 'tabla'"><div class="overflow-x-auto">
+              <table class="text-sm"><thead><tr>
+                <template x-for="(c, k) in b.datos.columnas" :key="'c'+k"><th class="p-1"><input class="campo !py-1 font-semibold" x-model="b.datos.columnas[k]"></th></template>
+                <th class="p-1"><button type="button" @click="b.datos.columnas.push('Columna'); b.datos.filas.forEach(f => f.push('')); guardar(b)" class="text-indigo-600" aria-label="Agregar columna"><i class="fas fa-plus"></i></button></th>
+              </tr></thead>
+              <tbody><template x-for="(f, r) in b.datos.filas" :key="'f'+r"><tr>
+                <template x-for="(celda, k) in f" :key="'f'+r+'c'+k"><td class="p-1"><input class="campo !py-1" x-model="b.datos.filas[r][k]"></td></template>
+                <td class="p-1"><button type="button" @click="b.datos.filas.splice(r,1); guardar(b)" class="text-slate-400 hover:text-red-600" aria-label="Quitar fila"><i class="fas fa-xmark"></i></button></td>
+              </tr></template></tbody></table>
+              <button type="button" @click="b.datos.filas.push(b.datos.columnas.map(() => '')); guardar(b)" class="mt-2 text-sm text-indigo-600 font-semibold"><i class="fas fa-plus"></i> Fila</button>
+            </div></template>
+          </div>
+
+          <div class="mt-3 pt-3 border-t border-dashed border-slate-200 dark:border-slate-700">
+            <button type="button" @click="insertarDespues = (insertarDespues === b.id ? null : b.id)" class="text-xs text-slate-400 hover:text-indigo-600"><i class="fas fa-plus"></i> Insertar bloque debajo</button>
+            <div x-show="insertarDespues === b.id" x-transition class="mt-2 flex flex-wrap gap-1">
+              <template x-for="t in tipos" :key="t.tipo"><button type="button" @click="agregar(t.tipo, b.id)" class="text-xs px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-indigo-500"><i class="fas" :class="'fa-' + t.icono"></i> <span x-text="t.nombre"></span></button></template>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <div class="tarjeta p-4 border-dashed">
+        <p class="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Agregar bloque al final</p>
+        <div class="flex flex-wrap gap-2">
+          <template x-for="t in tipos" :key="t.tipo">
+            <button type="button" @click="agregar(t.tipo)" class="btn-secundario !px-3 !py-1.5 text-xs"><i class="fas" :class="'fa-' + t.icono"></i> <span x-text="t.nombre"></span></button>
+          </template>
+        </div>
+      </div>
+
+      <form method="post" action="{% url 'blog:editor_eliminar' articulo.id %}" onsubmit="return confirm('¿Eliminar este artículo y todos sus bloques? No se puede deshacer.')" class="pt-4">
+        {% csrf_token %}<button type="submit" class="text-sm text-red-600 hover:underline"><i class="fas fa-trash"></i> Eliminar artículo</button>
+      </form>
+    </section>
+
+    {# ================= Vista previa ================= #}
+    <section :class="vista==='previa' ? '' : 'hidden lg:block'" class="lg:max-h-[calc(100vh-9rem)] lg:overflow-y-auto" aria-label="Vista previa">
+      <div class="tarjeta p-6 md:p-10">
+        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-4"><i class="fas fa-eye"></i> Vista previa en vivo</p>
+        <template x-if="portada"><img :src="portada" alt="" class="w-full max-h-64 object-cover rounded-xl mb-6"></template>
+        <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-6" x-text="titulo || 'Sin título'"></h1>
+        <div id="vista-previa">{{ preview|safe }}</div>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }, startup: { typeset: true } };</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script src="{% static 'js/editor_bloques.js' %}"></script>
+{% endblock %}

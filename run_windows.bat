@@ -10,12 +10,13 @@ if not exist ".venv\Scripts\python.exe" (
 )
 set "PY=.venv\Scripts\python.exe"
 
-:: --- Tailwind: variable de usuario o ruta por defecto en D:
-if "%TAILWIND_BIN%"=="" set "TAILWIND_BIN=D:\DevTools\tailwind\tailwindcss-v3.4.1.exe"
+:: --- Tailwind: TAILWIND_BIN (si lo definiste) o el descargado y verificado en adminExe\dist
+if "%TAILWIND_BIN%"=="" set "TAILWIND_BIN=%~dp0adminExe\dist\toolsForWindows\tailwindcss.exe"
 if not exist "%TAILWIND_BIN%" (
-    echo [INFO] Descargando Tailwind v3.4.1 a D:\DevTools\tailwind ...
-    if not exist "D:\DevTools\tailwind" mkdir "D:\DevTools\tailwind"
-    powershell -NoProfile -Command "Invoke-WebRequest -UseBasicParsing -Uri https://github.com/tailwindlabs/tailwindcss/releases/download/v3.4.1/tailwindcss-windows-x64.exe -OutFile '%TAILWIND_BIN%'"
+    echo [INFO] Descargando herramientas verificadas con SHA-256...
+    "%PY%" adminExe\descargar_tools.py --plataforma windows
+    if errorlevel 1 ( echo [ERROR] No se pudieron descargar las herramientas. & pause & exit /b 1 )
+    set "TAILWIND_BIN=%~dp0adminExe\dist\toolsForWindows\tailwindcss.exe"
 )
 
 echo [OK] Base de datos SQLite (db.sqlite3) - migraciones...

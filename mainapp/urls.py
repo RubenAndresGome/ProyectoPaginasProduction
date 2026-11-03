@@ -7,11 +7,9 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('hola-mundo/', views.hola_mundo, name='hola_mundo'),
     path('inicio/', views.index, name='inicio'),
-    path('test/', views.pagina_pruebas, name='Test'),
-    path('test/<int:redirigir>/', views.pagina_pruebas, name='Test'),
+
     path('contacto/', views.contacto, name='contacto'),
-    path('contacto/<str:nombre>/', views.contacto, name='contacto'),
-    path('contacto/<str:nombre>/<str:apellidos>/', views.contacto, name='contacto'),
+
     # Artículos
     path('articulos/', views.buscar_articulos, name='articulos_get'),
     path('articulo/<int:id>/', views.articulo_get, name='articulo_get'),

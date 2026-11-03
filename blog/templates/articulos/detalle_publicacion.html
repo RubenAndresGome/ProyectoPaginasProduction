@@ -1,59 +1,42 @@
-{% extends '_bases/base_blog.html' %}
-{% load static %}
-
-{% block title %}{{ articulo.title }}{% endblock %} {# CORREGIDO: de publicacion.title a articulo.title #}
+{% extends 'base.html' %}
+{% block title %}{{ articulo.title }}{% endblock %}
+{% block meta_description %}{{ articulo.resumen }}{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto px-4 py-10">
-    
-    <!-- Botón de Volver -->
-    <a href="{% url 'blog:blog_publicaciones' %}" class="inline-flex items-center text-slate-500 hover:text-purple-500 transition-colors mb-8 font-medium">
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-        Volver a Publicaciones
-    </a>
+<article class="max-w-3xl mx-auto">
+  <a href="{% url 'blog:blog_publicaciones' %}" class="nav-link inline-flex -ml-3 mb-6"><i class="fas fa-arrow-left"></i> Blog</a>
 
-    <!-- Encabezado del Post -->
-    <header class="mb-10 text-center">
-        <div class="mb-4">
-            {% for cat in articulo.categoria.all %} {# CORREGIDO: de publicacion.categoria a articulo.categoria #}
-                <span class="inline-block bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide mr-2">
-                    {{ cat.name }}
-                </span>
-            {% endfor %}
-        </div>
-        <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white mb-4 leading-tight">
-            {{ articulo.title }} {# CORREGIDO: de publicacion.title a articulo.title #}
-        </h1>
-        <p class="text-slate-500 dark:text-slate-400 font-mono text-sm">
-            Publicado el {{ articulo.created_at|date:"d de F, Y" }} por {{ articulo.user.username }} · ⏱️ {{ articulo.minutos_lectura }} min de lectura {# CORREGIDO: de publicacion.created_at a articulo.created_at #}
-        </p>
-    </header>
+  {% if not articulo.publicado %}
+  <div class="mb-6 p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 text-amber-800 dark:text-amber-300 text-sm"><i class="fas fa-eye-slash"></i> Borrador: solo los administradores pueden ver esta página.</div>
+  {% endif %}
 
-    <!-- Imagen Principal (Si tiene) -->
-    {% if articulo.imagen %} {# CORREGIDO: de publicacion.imagen a articulo.imagen #}
-    <div class="w-full h-64 md:h-96 mb-10 rounded-2xl overflow-hidden shadow-lg border border-slate-200 dark:border-slate-800">
-        <img src="{{ articulo.imagen.url }}" alt="{{ articulo.title }}" class="w-full h-full object-cover"> {# CORREGIDO: de publicacion.imagen.url a articulo.imagen.url #}
+  <header class="mb-8">
+    <div class="flex flex-wrap gap-2">
+      {% for cat in articulo.categoria.all %}<a href="{% url 'blog:blog_publicaciones' %}?cat={{ cat.slug }}" class="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">{{ cat.name }}</a>{% endfor %}
     </div>
-    {% endif %}
+    <h1 class="mt-4 text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">{{ articulo.title }}</h1>
+    <p class="mt-4 text-sm text-slate-500 dark:text-slate-400">
+      {{ articulo.user.get_full_name|default:articulo.user.username }} · {{ articulo.created_at|date:"d \d\e F, Y" }} · {{ articulo.minutos_lectura }} min de lectura
+    </p>
+  </header>
 
-    <!-- Contenido Rico (CKEditor) -->
-    <div class="post-content bg-white dark:bg-slate-900 p-6 md:p-10 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200">
-        {% for bloque in articulo.bloques.all %}
-            {% include bloque.plantilla_html %}
-        {% endfor %}
-        {% if articulo.content %}{{ articulo.content|safe }}{% endif %}
-        {% if user.is_staff %}
-        <div class="mt-10 pt-6 border-t border-slate-200 dark:border-slate-800 text-right">
-            <a href="{% url 'admin:blog_articulo_page_change' articulo.id %}" class="inline-block px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white text-sm font-bold rounded-lg">✏️ Editar bloques</a>
-        </div>
-        {% endif %}
-    </div>
+  {% if articulo.imagen %}
+  <img src="{{ articulo.imagen.url }}" alt="" class="w-full max-h-[28rem] object-cover rounded-2xl mb-10 border border-slate-200 dark:border-slate-800">
+  {% endif %}
 
-</div>
+  {% include 'articulos/_cuerpo.html' %}
 
-<!-- Configuración de MathJax -->
-<script>
-    MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }, svg: { fontCache: 'global' } };
-</script>
+  {% if articulo.publicado %}{% include 'articulos/_acciones.html' %}{% endif %}
+
+  {% if user.is_staff %}
+  <div class="mt-12 pt-6 border-t border-slate-200 dark:border-slate-800 flex justify-end">
+    <a href="{% url 'blog:editor' articulo.id %}" class="btn-primario"><i class="fas fa-pen-to-square"></i> Editar en el editor visual</a>
+  </div>
+  {% endif %}
+</article>
+{% endblock %}
+
+{% block extrajs %}
+<script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };</script>
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 {% endblock %}

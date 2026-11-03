@@ -1,0 +1,22 @@
+# =============================================================================
+# Herramientas externas del proyecto (no son paquetes de Python del sitio).
+# Lo lee adminExe/descargar_tools.py — mismo espíritu que requirements.txt.
+#
+# Formato:  nombre==versión ; plataforma ; fuente ; sha256=<hash>
+#   plataforma: windows | linux
+#   fuente:     URL https directa, o  pypi:<archivo.whl>  (se descarga de PyPI)
+#   sha256:     OBLIGATORIO. Si el archivo descargado no coincide, se borra y se aborta.
+#
+# Para actualizar una herramienta: cambia versión + fuente + sha256 juntos.
+# =============================================================================
+
+# --- Tailwind CSS (compilador standalone, sin Node) ---
+tailwindcss==3.4.1 ; windows ; https://github.com/tailwindlabs/tailwindcss/releases/download/v3.4.1/tailwindcss-windows-x64.exe ; sha256=ef2fe367daa8204cb186796c1833faee81a5b20e4c80e533f7a3b3dcc7db6c54
+tailwindcss==3.4.1 ; linux   ; https://github.com/tailwindlabs/tailwindcss/releases/download/v3.4.1/tailwindcss-linux-x64        ; sha256=a6814cc8fb6e573dd637352093f3b8e927c5c8628b1ff87826652935af1430b1
+
+# --- uv (instala Python 3.12 y las dependencias del proyecto) ---
+uv==0.13.6 ; windows ; pypi:uv-0.13.6-py3-none-win_amd64.whl                                     ; sha256=7c9bc35ccb65932d8dc10a0669f9c805eaa3c9827ce18ecbecb1bd67944b2cdf
+uv==0.13.6 ; linux   ; pypi:uv-0.13.6-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl    ; sha256=22759b8895e1103578de6fb4cd27e94b4399d021023378d29f01333717751fba
+
+# --- Paquete .deb (solo Linux): dependencias del sistema que apt instalará ---
+deb-depends ; linux ; ca-certificates, libsqlite3-0

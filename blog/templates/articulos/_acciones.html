@@ -1,0 +1,55 @@
+{# Barra de acciones: me gusta, compartir, Markdown. Espera: articulo, total_megusta, me_gusta, url_absoluta #}
+<div x-data="accionesArticulo({
+        likeUrl: '{% url 'blog:me_gusta' articulo.id %}',
+        compartirUrl: '{% url 'blog:compartir' articulo.id %}',
+        meGusta: {{ me_gusta|yesno:'true,false' }},
+        total: {{ total_megusta }},
+        compartidos: {{ articulo.veces_compartido }},
+        url: '{{ url_absoluta|escapejs }}',
+        titulo: '{{ articulo.title|escapejs }}'
+     })"
+     class="my-10 py-4 border-y border-slate-200 dark:border-slate-800 flex flex-wrap items-center gap-2">
+  <button type="button" @click="alternarLike()" :aria-pressed="meGusta" class="btn-secundario" :class="meGusta ? '!text-rose-600 !border-rose-300 dark:!border-rose-500/50' : ''">
+    <i :class="meGusta ? 'fas fa-heart' : 'far fa-heart'"></i> <span x-text="total"></span> <span class="sr-only">me gusta</span>
+  </button>
+
+  <div class="relative" @keydown.escape="menu = false">
+    <button type="button" @click="compartirNativo()" class="btn-secundario"><i class="fas fa-share-nodes"></i> Compartir <span class="text-slate-400" x-show="compartidos" x-text="'· ' + compartidos"></span></button>
+    <div x-show="menu" @click.outside="menu = false" x-transition.opacity style="display:none" class="menu-flotante left-0">
+      <a :href="'https://wa.me/?text=' + encodeURIComponent(titulo + ' ' + url)" target="_blank" rel="noopener" @click="registrar()" class="menu-item"><i class="fab fa-whatsapp w-4"></i> WhatsApp</a>
+      <a :href="'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(url)" target="_blank" rel="noopener" @click="registrar()" class="menu-item"><i class="fab fa-linkedin w-4"></i> LinkedIn</a>
+      <a :href="'https://twitter.com/intent/tweet?text=' + encodeURIComponent(titulo) + '&url=' + encodeURIComponent(url)" target="_blank" rel="noopener" @click="registrar()" class="menu-item"><i class="fab fa-x-twitter w-4"></i> X</a>
+      <button type="button" @click="copiar()" class="menu-item w-full"><i class="fas fa-link w-4"></i> <span x-text="copiado ? '¡Enlace copiado!' : 'Copiar enlace'"></span></button>
+    </div>
+  </div>
+
+  <a href="{% url 'blog:markdown' articulo.id %}" class="btn-secundario ml-auto" download><i class="fab fa-markdown"></i> Descargar .md</a>
+  <p x-show="aviso" x-text="aviso" class="w-full text-sm text-slate-500" style="display:none"></p>
+</div>
+<script>
+function accionesArticulo(cfg) {
+  const csrf = () => (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '';
+  const post = (url) => fetch(url, { method: 'POST', headers: { 'X-CSRFToken': csrf() }, credentials: 'same-origin' });
+  return {
+    ...cfg, menu: false, copiado: false, aviso: '',
+    async alternarLike() {
+      const r = await post(this.likeUrl);
+      const d = await r.json().catch(() => ({}));
+      if (r.status === 401 && d.login) { this.aviso = 'Inicia sesión para dar me gusta.'; setTimeout(() => location.href = d.login, 900); return; }
+      if (d.ok) { this.meGusta = d.me_gusta; this.total = d.total; }
+    },
+    async registrar() {
+      const d = await post(this.compartirUrl).then((r) => r.json()).catch(() => ({}));
+      if (d.ok) this.compartidos = d.total;
+    },
+    async compartirNativo() {
+      if (navigator.share) {
+        try { await navigator.share({ title: this.titulo, url: this.url }); this.registrar(); } catch (e) { /* cancelado */ }
+      } else { this.menu = !this.menu; }
+    },
+    async copiar() {
+      try { await navigator.clipboard.writeText(this.url); this.copiado = true; this.registrar(); setTimeout(() => this.copiado = false, 2000); } catch (e) {}
+    },
+  };
+}
+</script>

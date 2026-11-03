@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  secretos:
+    name: Sin llaves ni contraseñas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # historial completo: un secreto borrado sigue en commits viejos
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Archivos del repositorio
+        run: python adminExe/escanear_secretos.py --todo
+
+      - name: Historial completo de git
+        run: python adminExe/escanear_secretos.py --historial
+
+  pruebas:
+    needs: secretos
+    runs-on: ubuntu-latest
+    env:
+      SECRET_KEY: ci-solo-pruebas-no-usar-en-produccion
+      DEBUG: "True"
+      DB_ENGINE: django.db.backends.sqlite3
+      DB_NAME: db_ci.sqlite3
+      SILENCED_SYSTEM_CHECKS: ckeditor.W001
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements*.txt
+
+      - name: Instalar dependencias
+        run: pip install -r requirements-dev.txt
+
+      - name: Revisión del sistema
+        run: python manage.py check
+
+      - name: Revisión de seguridad para producción
+        env:
+          DEBUG: "False"
+          SECRET_KEY: ${{ github.run_id }}-${{ github.sha }}-clave-larga-solo-para-check-deploy
+        run: python manage.py check --deploy --fail-level WARNING
+
+      - name: Dependencias con vulnerabilidades conocidas (pip-audit)
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt
+
+      - name: Migraciones al día
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: Pruebas
+        run: python manage.py test --verbosity 2
+
+      - name: Herramientas verificadas con SHA-256 (Linux + .deb)
+        run: python adminExe/descargar_tools.py --plataforma linux
+
+      - name: Compilar CSS (Tailwind)
+        run: adminExe/dist/toolsForLinux/bin/tailwindcss -i static/src/styles.css -o /tmp/styles.css --minify
+
+      - name: Paquete .deb instalable
+        run: |
+          sudo apt-get install -y ./adminExe/dist/toolsForLinux/mathmaster-tools_*.deb
+          /opt/mathmaster-tools/bin/tailwindcss --help | head -1

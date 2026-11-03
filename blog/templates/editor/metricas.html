@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Métricas del blog{% endblock %}
+{% block content %}
+<a href="{% url 'blog:editor_panel' %}" class="nav-link inline-flex -ml-3 mb-4"><i class="fas fa-arrow-left"></i> Editor</a>
+<h1 class="text-3xl font-extrabold text-slate-900 dark:text-white">Métricas del blog</h1>
+<p class="text-slate-500 mt-1">Vistas únicas por visitante y día (no cuenta a los administradores).</p>
+
+<div class="mt-6 grid gap-4 grid-cols-2 lg:grid-cols-4">
+  <div class="tarjeta p-5"><p class="text-sm text-slate-500"><i class="fas fa-eye text-indigo-500"></i> Vistas totales</p><p class="mt-1 text-3xl font-extrabold text-slate-900 dark:text-white">{{ totales.vistas }}</p></div>
+  <div class="tarjeta p-5"><p class="text-sm text-slate-500"><i class="fas fa-calendar text-cyan-500"></i> Últimos 30 días</p><p class="mt-1 text-3xl font-extrabold text-slate-900 dark:text-white">{{ totales.vistas_30 }}</p></div>
+  <div class="tarjeta p-5"><p class="text-sm text-slate-500"><i class="fas fa-heart text-rose-500"></i> Me gusta</p><p class="mt-1 text-3xl font-extrabold text-slate-900 dark:text-white">{{ totales.likes }}</p></div>
+  <div class="tarjeta p-5"><p class="text-sm text-slate-500"><i class="fas fa-share-nodes text-emerald-500"></i> Compartidos</p><p class="mt-1 text-3xl font-extrabold text-slate-900 dark:text-white">{{ totales.compartidos }}</p></div>
+</div>
+
+<div class="tarjeta p-6 mt-6">
+  <h2 class="font-bold text-slate-900 dark:text-white">Vistas por día (30 días)</h2>
+  <div class="mt-4 h-40 flex items-end gap-1" role="img" aria-label="Vistas por día en los últimos 30 días">
+    {% for d in serie %}
+    <div class="flex-1 h-full flex flex-col justify-end" title="{{ d.fecha|date:'d M' }}: {{ d.n }} vista{{ d.n|pluralize }}">
+      <div class="w-full rounded-t {% if d.n %}bg-indigo-500{% else %}bg-slate-200 dark:bg-slate-800{% endif %}" style="height: {% if d.n %}{{ d.alto }}{% else %}3{% endif %}%"></div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="mt-1 flex justify-between text-[10px] text-slate-400"><span>{{ serie.0.fecha|date:"d M" }}</span><span>Hoy</span></div>
+</div>
+
+<div class="tarjeta overflow-hidden mt-6">
+  <table class="w-full text-sm">
+    <thead class="bg-slate-50 dark:bg-slate-800/50 text-left text-slate-500">
+      <tr><th class="px-4 py-3">Artículo</th><th class="px-4 py-3 text-right">Vistas</th><th class="px-4 py-3 text-right hidden sm:table-cell">30 días</th><th class="px-4 py-3 text-right">❤</th><th class="px-4 py-3 text-right hidden sm:table-cell">Compartido</th><th class="px-4 py-3 text-right hidden md:table-cell">Lectura</th></tr>
+    </thead>
+    <tbody>
+      {% for a in articulos %}
+      <tr class="border-t border-slate-100 dark:border-slate-800">
+        <td class="px-4 py-3"><a href="{% url 'blog:detalle_publicacion' a.id %}" class="font-semibold text-slate-900 dark:text-white hover:text-indigo-600">{{ a.title }}</a>{% if not a.publicado %} <span class="text-xs text-amber-600">(borrador)</span>{% endif %}</td>
+        <td class="px-4 py-3 text-right tabular-nums">{{ a.vistas_total }}</td>
+        <td class="px-4 py-3 text-right tabular-nums hidden sm:table-cell">{{ a.vistas_30 }}</td>
+        <td class="px-4 py-3 text-right tabular-nums">{{ a.likes }}</td>
+        <td class="px-4 py-3 text-right tabular-nums hidden sm:table-cell">{{ a.veces_compartido }}</td>
+        <td class="px-4 py-3 text-right text-slate-500 hidden md:table-cell">{{ a.minutos_lectura }} min</td>
+      </tr>
+      {% empty %}<tr><td colspan="6" class="px-4 py-10 text-center text-slate-500">Sin artículos todavía.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -362,7 +362,3 @@ def detalle_estudiante_ajax(request, user_id):
     }
     return render(request, 'entrenador/partials/ficha_estudiante.html', context)
 
-
-def placeholder_view(request):
-    """Vista temporal para enlaces generales en construcción"""
-    return HttpResponse("<h1>Esta página está en construcción</h1><p>Pronto habrá contenido aquí.</p>")

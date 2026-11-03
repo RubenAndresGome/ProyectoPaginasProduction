@@ -15,6 +15,7 @@
 
     {% include '_footer.html' %}
     {% include '_mensajes.html' %}
+    {% block tutor %}{% include '_tutor.html' %}{% endblock %}
     {% block extrajs %}{% endblock %}
     <script src="{% static 'js/easter_egg.js' %}" defer></script>
 </body>
